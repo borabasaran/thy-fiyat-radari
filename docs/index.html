@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>THY Fiyat Radarı</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --pano:#0d1521;        /* kalkış panosu laciverti */
+    --pano-acik:#16202f;
+    --cizgi:#243144;
+    --metin:#e8edf4;
+    --metin-soluk:#8b98ab;
+    --kirmizi:#e5233d;     /* bayrak taşıyıcı kırmızısı */
+    --amber:#ffb547;       /* pano ışığı */
+    --yesil:#3ecf8e;
+    --radius:10px;
+    font-size:16px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    background:var(--pano);
+    color:var(--metin);
+    font-family:"Archivo",system-ui,sans-serif;
+    min-height:100vh;
+    padding:0 clamp(16px,4vw,56px) 64px;
+  }
+  /* ---------- üst şerit ---------- */
+  header{
+    display:flex;flex-wrap:wrap;gap:16px;align-items:baseline;justify-content:space-between;
+    padding:28px 0 20px;border-bottom:2px solid var(--kirmizi);
+  }
+  h1{font-weight:800;font-size:clamp(1.4rem,3vw,2rem);letter-spacing:.02em}
+  h1 .nokta{color:var(--kirmizi)}
+  .durum{font-family:"IBM Plex Mono",monospace;font-size:.8rem;color:var(--metin-soluk)}
+  .durum b{color:var(--amber);font-weight:600}
+  .rozet{display:inline-block;margin-left:8px;padding:2px 8px;border:1px solid var(--cizgi);
+    border-radius:99px;font-size:.7rem;letter-spacing:.08em;text-transform:uppercase}
+  .rozet.test{color:var(--amber);border-color:var(--amber)}
+  .rozet.prod{color:var(--yesil);border-color:var(--yesil)}
+
+  /* ---------- kontrol satırı ---------- */
+  .kontrol{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin:22px 0 30px}
+  button,input{font-family:inherit;font-size:.9rem}
+  .btn{
+    background:var(--kirmizi);color:#fff;border:none;border-radius:var(--radius);
+    padding:10px 20px;font-weight:700;cursor:pointer;letter-spacing:.02em;
+  }
+  .btn:hover{filter:brightness(1.12)}
+  .btn:focus-visible,input:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
+  .btn[disabled]{opacity:.5;cursor:wait}
+  .btn.ikincil{background:transparent;border:1px solid var(--cizgi);color:var(--metin)}
+  #patKutu{display:none;gap:8px;align-items:center;flex-wrap:wrap}
+  #patKutu.acik{display:flex}
+  #pat{
+    background:var(--pano-acik);border:1px solid var(--cizgi);border-radius:var(--radius);
+    color:var(--metin);padding:10px 12px;width:min(340px,80vw);
+    font-family:"IBM Plex Mono",monospace;font-size:.8rem;
+  }
+  .ipucu{font-size:.75rem;color:var(--metin-soluk);max-width:640px;line-height:1.5}
+  #mesaj{font-family:"IBM Plex Mono",monospace;font-size:.8rem;min-height:1.2em}
+  #mesaj.iyi{color:var(--yesil)} #mesaj.kotu{color:var(--kirmizi)} #mesaj.bekle{color:var(--amber)}
+
+  /* ---------- fiyat panosu (imza öğe) ---------- */
+  .rota-blok{margin-bottom:36px}
+  .rota-baslik{
+    display:flex;flex-wrap:wrap;gap:10px;align-items:baseline;margin-bottom:10px;
+  }
+  .rota-baslik h2{font-size:1.05rem;font-weight:700;letter-spacing:.03em}
+  .rota-baslik .kod{
+    font-family:"IBM Plex Mono",monospace;color:var(--amber);font-size:.85rem;letter-spacing:.15em;
+  }
+  .rota-baslik .enucuz{font-size:.75rem;color:var(--metin-soluk)}
+  .pano{
+    display:grid;gap:6px;
+    grid-template-columns:repeat(auto-fill,minmax(128px,1fr));
+  }
+  .hucre{
+    background:var(--pano-acik);border:1px solid var(--cizgi);border-radius:var(--radius);
+    padding:12px 12px 10px;position:relative;overflow:hidden;
+    transition:transform .12s ease;
+  }
+  .hucre:hover{transform:translateY(-2px)}
+  .hucre::before{ /* pano ışığı: fiyat ısısına göre üst çizgi */
+    content:"";position:absolute;inset:0 0 auto 0;height:3px;background:var(--isi,var(--cizgi));
+  }
+  .hucre .tarih{
+    font-family:"IBM Plex Mono",monospace;font-size:.72rem;color:var(--metin-soluk);
+    letter-spacing:.06em;margin-bottom:8px;
+  }
+  .hucre .fiyat{
+    font-family:"IBM Plex Mono",monospace;font-weight:600;font-size:1.05rem;
+    font-variant-numeric:tabular-nums;
+  }
+  .hucre .pb{font-size:.7rem;color:var(--metin-soluk);margin-left:2px}
+  .hucre.encucuz .fiyat{color:var(--yesil)}
+  .hucre.encucuz::after{
+    content:"EN UCUZ";position:absolute;right:8px;top:8px;font-size:.55rem;
+    letter-spacing:.12em;color:var(--yesil);
+  }
+  .hucre.sorunlu .fiyat{color:var(--metin-soluk);font-size:.8rem;font-weight:400}
+  .hucre a{color:inherit;text-decoration:none;display:block}
+  .bos{
+    border:1px dashed var(--cizgi);border-radius:var(--radius);padding:40px;
+    text-align:center;color:var(--metin-soluk);line-height:1.6;
+  }
+  footer{margin-top:48px;font-size:.72rem;color:var(--metin-soluk);line-height:1.6;
+    border-top:1px solid var(--cizgi);padding-top:16px}
+  @media (prefers-reduced-motion:reduce){.hucre{transition:none}.hucre:hover{transform:none}}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>THY FİYAT RADARI<span class="nokta">.</span></h1>
+  <div class="durum">
+    Son güncelleme: <b id="zaman">—</b><span id="ortam" class="rozet">—</span>
+  </div>
+</header>
+
+<div class="kontrol">
+  <button class="btn" id="btnCalistir">Sorguyu şimdi çalıştır</button>
+  <button class="btn ikincil" id="btnYenile">Sonuçları yenile</button>
+  <span id="mesaj" aria-live="polite"></span>
+</div>
+<div id="patKutu">
+  <input id="pat" type="password" placeholder="GitHub fine-grained token (actions: write)" autocomplete="off">
+  <button class="btn ikincil" id="btnPatKaydet">Kaydet ve çalıştır</button>
+  <p class="ipucu">Tek tıkla tetikleme için depo üzerinde <em>Actions: Read and write</em> izni olan bir
+  fine-grained personal access token gerekir (Settings → Developer settings → Fine-grained tokens).
+  Token yalnızca bu tarayıcıda saklanır. Alternatif: deponun <em>Actions</em> sekmesinden
+  "THY fiyatlarını güncelle" iş akışını elle çalıştırabilirsiniz.</p>
+</div>
+
+<main id="icerik">
+  <div class="bos">Veriler yükleniyor…</div>
+</main>
+
+<footer>
+  Fiyatlar Google Flights verisinden yalnızca Turkish Airlines uçuşlarına filtrelenerek derlenir ve
+  bilgilendirme amaçlıdır; satın alma anındaki fiyat farklı olabilir. Hücreye tıklamak ilgili aramayı
+  turkishairlines.com üzerinde açar; satın alma oradan yapılır.
+</footer>
+
+<script>
+"use strict";
+const VERI = "data/results.json";
+const IS_AKISI = "fiyat-guncelle.yml";
+
+/* ---------- yardımcılar ---------- */
+const $ = s => document.querySelector(s);
+const trTarih = iso => new Date(iso + "T00:00:00").toLocaleDateString("tr-TR",
+  {day:"2-digit", month:"short", weekday:"short"});
+const trPara = n => n.toLocaleString("tr-TR", {maximumFractionDigits:0});
+
+function depoBilgisi(){
+  // kullanici.github.io/depo-adi/ → {owner, repo}; özel alan adında null döner
+  const host = location.hostname, yol = location.pathname.split("/").filter(Boolean);
+  if (host.endsWith(".github.io") && yol.length) {
+    return { owner: host.split(".")[0], repo: yol[0] };
+  }
+  return null;
+}
+
+function thyLinki(h){
+  // Hücreden THY arama sayfasına derin bağlantı (parametreler yoksa ana arama açılır)
+  return "https://www.turkishairlines.com/tr-tr/ucak-bileti/"
+    + `?origin=${h.kalkis}&destination=${h.varis}&departureDate=${h.gidisTarihi}`
+    + (h.donusTarihi ? `&returnDate=${h.donusTarihi}` : "");
+}
+
+/* ---------- veri çiz ---------- */
+async function yukle(sessiz=false){
+  try{
+    const y = await fetch(VERI + "?t=" + Date.now(), {cache:"no-store"});
+    if(!y.ok) throw new Error("HTTP " + y.status);
+    ciz(await y.json());
+    if(!sessiz) bildir("", "");
+  }catch(e){
+    $("#icerik").innerHTML = `<div class="bos">Sonuç dosyası okunamadı (${e.message}).<br>
+      İlk sorgu henüz çalışmadıysa Actions sekmesinden "THY fiyatlarını güncelle"yi başlatın.</div>`;
+  }
+}
+
+function ciz(veri){
+  $("#zaman").textContent = new Date(veri.guncellemeZamani)
+    .toLocaleString("tr-TR", {dateStyle:"medium", timeStyle:"short"});
+  const ortam = $("#ortam");
+  ortam.textContent = veri.ornekVeri ? "örnek veri" : "Google Flights · TK";
+  ortam.className = "rozet " + (veri.ornekVeri ? "test" : "prod");
+
+  const gruplar = new Map();
+  for(const h of veri.sonuclar || []){
+    if(!gruplar.has(h.rota)) gruplar.set(h.rota, []);
+    gruplar.get(h.rota).push(h);
+  }
+  if(!gruplar.size){
+    $("#icerik").innerHTML = `<div class="bos">Henüz sonuç yok. config.json'a rota ekleyip sorguyu çalıştırın.</div>`;
+    return;
+  }
+
+  let html = "";
+  for(const [rota, hucreler] of gruplar){
+    const fiyatli = hucreler.filter(h => h.durum === "ok");
+    const tutarlar = fiyatli.map(h => h.tutar);
+    const min = Math.min(...tutarlar), max = Math.max(...tutarlar);
+    const pb = fiyatli[0]?.paraBirimi || "";
+    const kod = `${hucreler[0].kalkis} ✈ ${hucreler[0].varis}` + (hucreler[0].seyahatTipi === "R" ? " ⇄" : "");
+
+    html += `<section class="rota-blok"><div class="rota-baslik">
+      <span class="kod">${kod}</span><h2>${rota}</h2>
+      ${fiyatli.length ? `<span class="enucuz">en ucuz: ${trPara(min)} ${pb}</span>` : ""}
+    </div><div class="pano">`;
+
+    for(const h of hucreler){
+      if(h.durum === "ok"){
+        const oran = max > min ? (h.tutar - min) / (max - min) : 0;      // 0=ucuz 1=pahalı
+        const ton = 150 - Math.round(oran * 150);                        // yeşil→kırmızı
+        const isi = `hsl(${ton} 70% 52%)`;
+        const encucuz = h.tutar === min ? " encucuz" : "";
+        html += `<div class="hucre${encucuz}" style="--isi:${isi}"><a href="${thyLinki(h)}" target="_blank" rel="noopener">
+          <div class="tarih">${trTarih(h.gidisTarihi)}${h.donusTarihi ? " → " + trTarih(h.donusTarihi) : ""}</div>
+          <div class="fiyat">${trPara(h.tutar)}<span class="pb">${h.paraBirimi}</span></div>
+          ${h.aktarma !== undefined ? `<div class="tarih" style="margin:6px 0 0">${h.aktarma === 0 ? "aktarmasız" : h.aktarma + " aktarma"}</div>` : ""}
+        </a></div>`;
+      }else{
+        const not = h.durum === "hata" ? "sorgu hatası" : "fiyat bulunamadı";
+        html += `<div class="hucre sorunlu" title="${(h.detay||"").replace(/"/g,"&quot;")}">
+          <div class="tarih">${trTarih(h.gidisTarihi)}</div>
+          <div class="fiyat">${not}</div></div>`;
+      }
+    }
+    html += `</div></section>`;
+  }
+  $("#icerik").innerHTML = html;
+}
+
+/* ---------- tek tıkla tetikleme ---------- */
+function bildir(metin, tur){ const m = $("#mesaj"); m.textContent = metin; m.className = tur; }
+
+async function tetikle(token){
+  const depo = depoBilgisi();
+  if(!depo){
+    bildir("Depo adı adresten çözülemedi — Actions sekmesinden elle çalıştırın.", "kotu");
+    return;
+  }
+  $("#btnCalistir").disabled = true;
+  bildir("İş akışı tetikleniyor…", "bekle");
+  try{
+    const y = await fetch(
+      `https://api.github.com/repos/${depo.owner}/${depo.repo}/actions/workflows/${IS_AKISI}/dispatches`,
+      { method:"POST",
+        headers:{ "Authorization":"Bearer " + token,
+                  "Accept":"application/vnd.github+json",
+                  "X-GitHub-Api-Version":"2022-11-28" },
+        body: JSON.stringify({ ref:"main" }) });
+    if(y.status !== 204) throw new Error("GitHub API " + y.status);
+    bildir("Sorgu başlatıldı — sonuçlar birkaç dakika içinde gelir, izleniyor…", "iyi");
+    izle();
+  }catch(e){
+    bildir("Tetiklenemedi: " + e.message + " (token izinlerini kontrol edin)", "kotu");
+  }finally{
+    $("#btnCalistir").disabled = false;
+  }
+}
+
+let izleyici = null;
+function izle(){
+  const eskiZaman = $("#zaman").textContent;
+  clearInterval(izleyici);
+  let deneme = 0;
+  izleyici = setInterval(async () => {
+    if(++deneme > 40){ clearInterval(izleyici); bildir("İzleme durduruldu — Sonuçları yenile'ye basın.", ""); return; }
+    await yukle(true);
+    if($("#zaman").textContent !== eskiZaman){
+      clearInterval(izleyici);
+      bildir("Yeni sonuçlar yüklendi ✓", "iyi");
+    }
+  }, 15000);
+}
+
+$("#btnYenile").addEventListener("click", () => yukle());
+$("#btnCalistir").addEventListener("click", () => {
+  const token = localStorage.getItem("ghToken");
+  if(token) tetikle(token);
+  else $("#patKutu").classList.add("acik");
+});
+$("#btnPatKaydet").addEventListener("click", () => {
+  const t = $("#pat").value.trim();
+  if(!t){ bildir("Token boş olamaz.", "kotu"); return; }
+  localStorage.setItem("ghToken", t);
+  $("#patKutu").classList.remove("acik");
+  tetikle(t);
+});
+
+yukle();
+</script>
+</body>
+</html>
