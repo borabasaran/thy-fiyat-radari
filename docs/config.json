@@ -1,0 +1,34 @@
+{
+  "ayarlar": {
+    "yolcuSayisi": 1,
+    "paraBirimiTercihi": "TRY",
+    "havayolular": ["TK"],
+    "kabin": "economy",
+    "istekArasiBeklemeSn": 3
+  },
+  "rotalar": [
+    {
+      "ad": "İstanbul → Berlin",
+      "kalkis": "IST",
+      "varis": "BER",
+      "seyahatTipi": "O",
+      "tarihler": { "baslangic": "2026-08-01", "bitis": "2026-08-15", "adimGun": 2 }
+    },
+    {
+      "ad": "İstanbul → Münih (gidiş-dönüş, 7 gece)",
+      "kalkis": "IST",
+      "varis": "MUC",
+      "seyahatTipi": "R",
+      "konaklamaGun": 7,
+      "tarihler": { "baslangic": "2026-09-01", "bitis": "2026-09-10", "adimGun": 3 }
+    },
+    {
+      "ad": "Ankara → Köln (aktarmasız)",
+      "kalkis": "ESB",
+      "varis": "CGN",
+      "seyahatTipi": "O",
+      "maxAktarma": 0,
+      "tarihler": { "liste": ["2026-08-05", "2026-08-12", "2026-08-19"] }
+    }
+  ]
+}
