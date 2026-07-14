@@ -1,0 +1,57 @@
+name: THY fiyatlarını güncelle
+
+on:
+  workflow_dispatch: {}
+  schedule:
+    - cron: "0 5 * * *"
+  push:
+    branches: [main]
+    paths:
+      - "docs/config.json"
+      - "scripts/**"
+      - ".github/workflows/fiyat-guncelle.yml"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: fiyat-guncelle
+  cancel-in-progress: false
+
+jobs:
+  sorgula:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Depoyu al
+        uses: actions/checkout@v4
+
+      - name: Python kur
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Bağımlılıkları kur
+        run: pip install fast-flights
+
+      - name: Fiyatları çek
+        env:
+          FF_PROXY: ${{ secrets.FF_PROXY }}
+        run: python scripts/fetch_prices.py
+
+      - name: Sonuçları commit'le
+        if: always()
+        run: |
+          git config user.name "fiyat-radari-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git pull --rebase
+          git add docs/data/results.json
+          git diff --cached --quiet || git commit -m "Fiyat verisi güncellendi ($(date -u +'%Y-%m-%d %H:%M UTC'))"
+          git push
+
+  yayinla:
+    needs: sorgula
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    uses: ./.github/workflows/pages.yml
