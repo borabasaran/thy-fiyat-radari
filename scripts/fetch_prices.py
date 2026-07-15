@@ -58,6 +58,24 @@ def tarih_uret(tarihler: dict):
         d += dt.timedelta(days=adim)
 
 
+def rotalari_ac(rota: dict):
+    """'varislar' ve/veya 'kalkislar' listelerini tek tek rotalara açar.
+    Tek 'varis'/'kalkis' yazımı da desteklenir (geriye dönük uyumlu)."""
+    kalkislar = rota.get("kalkislar") or [rota["kalkis"]]
+    varislar = rota.get("varislar") or [rota["varis"]]
+    for k in kalkislar:
+        for v in varislar:
+            tek = {x: y for x, y in rota.items()
+                   if x not in ("kalkislar", "varislar", "ad")}
+            tek["kalkis"], tek["varis"] = k, v
+            if rota.get("ad"):
+                # Tek destinasyonluk blokta kullanıcının verdiği ad korunur;
+                # çoklu blokta her rota kendi başlığını alır.
+                tek["ad"] = (rota["ad"] if len(kalkislar) * len(varislar) == 1
+                             else f'{rota["ad"]}: {k} → {v}')
+            yield tek
+
+
 def sorgula(rota: dict, gidis: dt.date, ayarlar: dict):
     """Tek bir rota+tarih için Google Flights sorgusu; (fiyat, paraBirimi,
     ucusSayisi, aktarma) döner ya da FlightsNotFound fırlatır."""
@@ -111,7 +129,8 @@ def main() -> int:
     hucreler = []
     hata_sayisi = 0
 
-    for rota in config.get("rotalar", []):
+    for blok in config.get("rotalar", []):
+      for rota in rotalari_ac(blok):
         for gidis in tarih_uret(rota["tarihler"]):
             hucre = {
                 "rota": rota.get("ad") or f'{rota["kalkis"]} → {rota["varis"]}',
