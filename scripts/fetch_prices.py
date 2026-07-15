@@ -7,7 +7,10 @@ docs/config.json içindeki rota × tarih kombinasyonlarını Google Flights
 Turkish Airlines uçuşlarına filtreler ve en düşük fiyatları
 docs/data/results.json dosyasına yazar.
 
-Opsiyonel ortam değişkeni:
+Opsiyonel ortam değişkenleri:
+  BOLGE    : yalnız o bölgeyi sorgular (Avrupa/Asya/Amerika); boş veya
+             "hepsi" ise tüm rotalar taranır. Tek bölge sorgulandığında
+             diğer bölgelerin önceki sonuçları korunur.
   FF_PROXY : Google engellerse kullanılacak proxy adresi (http://...)
 
 Kurulum: pip install fast-flights
@@ -42,6 +45,10 @@ ROOT = Path(__file__).resolve().parent.parent
 CONFIG_PATH = ROOT / "docs" / "config.json"
 OUTPUT_PATH = ROOT / "docs" / "data" / "results.json"
 PROXY = os.environ.get("FF_PROXY") or None
+# Yalnız tek bir bölgeyi sorgulamak için: BOLGE=Asya (boş/hepsi = tümü)
+BOLGE = (os.environ.get("BOLGE") or "").strip()
+if BOLGE.lower() in ("", "hepsi", "all"):
+    BOLGE = None
 
 
 def tarih_uret(tarihler: dict):
@@ -128,8 +135,11 @@ def main() -> int:
 
     hucreler = []
     hata_sayisi = 0
+    print(f"Sorgulanan bölge: {BOLGE or 'hepsi'}")
 
     for blok in config.get("rotalar", []):
+      if BOLGE and (blok.get("bolge") or "Avrupa") != BOLGE:
+        continue          # bu çalıştırmada başka bölge sorgulanıyor
       for rota in rotalari_ac(blok):
         for gidis in tarih_uret(rota["tarihler"]):
             hucre = {
@@ -179,17 +189,32 @@ def main() -> int:
             hucreler.append(hucre)
             time.sleep(bekleme)
 
+    yeni_sayisi = len(hucreler)
+
+    # Tek bölge sorgulandıysa, diğer bölgelerin önceki sonuçları korunur
+    if BOLGE and OUTPUT_PATH.exists():
+        try:
+            eski = json.loads(OUTPUT_PATH.read_text(encoding="utf-8"))
+            if not eski.get("ornekVeri"):
+                korunan = [h for h in eski.get("sonuclar", [])
+                           if (h.get("bolge") or "Avrupa") != BOLGE]
+                hucreler = korunan + hucreler
+                print(f"{len(korunan)} hücre diğer bölgelerden korundu.")
+        except Exception as e:
+            print("Önceki sonuçlar okunamadı, sıfırdan yazılıyor:", e)
+
     cikti = {
         "guncellemeZamani": dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds"),
         "kaynak": "google-flights (Turkish Airlines filtreli)",
+        "sorgulananBolge": BOLGE or "hepsi",
         "hucreSayisi": len(hucreler),
         "hataSayisi": hata_sayisi,
         "sonuclar": hucreler,
     }
     OUTPUT_PATH.parent.mkdir(parents=True, exist_ok=True)
     OUTPUT_PATH.write_text(json.dumps(cikti, ensure_ascii=False, indent=2), encoding="utf-8")
-    print(f"\n{len(hucreler)} hücre yazıldı → {OUTPUT_PATH} (hata: {hata_sayisi})")
-    if hucreler and hata_sayisi == len(hucreler):
+    print(f"\n{len(hucreler)} hücre yazıldı → {OUTPUT_PATH} (yeni: {yeni_sayisi}, hata: {hata_sayisi})")
+    if yeni_sayisi and hata_sayisi == yeni_sayisi:
         # Sonuç dosyası (hata ayrıntılarıyla) yine de commit'lensin diye
         # iş akışını düşürmüyoruz; durum panoda görünür.
         print("UYARI: hiçbir hücre için fiyat alınamadı — ayrıntılar results.json içinde.")
