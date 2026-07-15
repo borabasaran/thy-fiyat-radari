@@ -43,7 +43,6 @@ jobs:
         run: |
           git config user.name "fiyat-radari-bot"
           git config user.email "actions@users.noreply.github.com"
-          git pull --rebase
           git add docs/data/results.json
           git diff --cached --quiet || git commit -m "Fiyat verisi güncellendi ($(date -u +'%Y-%m-%d %H:%M UTC'))"
           git push
