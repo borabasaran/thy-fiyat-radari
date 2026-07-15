@@ -356,7 +356,9 @@
     },
     {
       "kalkis": "IST",
-      "varislar": [],
+      "varislar": [
+        "HAV"
+      ],
       "bolge": "Amerika",
       "seyahatTipi": "R",
       "tarihler": {
