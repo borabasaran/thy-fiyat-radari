@@ -123,6 +123,7 @@
 <div class="kontrol">
   <button class="btn" id="btnCalistir">Sorguyu şimdi çalıştır</button>
   <button class="btn ikincil" id="btnYenile">Sonuçları yenile</button>
+  <button class="btn ikincil" id="btnToken">Token'ı gir / değiştir</button>
   <span id="mesaj" aria-live="polite"></span>
 </div>
 <div id="patKutu">
@@ -256,11 +257,17 @@ async function tetikle(token){
                   "Accept":"application/vnd.github+json",
                   "X-GitHub-Api-Version":"2022-11-28" },
         body: JSON.stringify({ ref:"main" }) });
+    if(y.status === 401 || y.status === 403){
+      localStorage.removeItem("ghToken");
+      $("#patKutu").classList.add("acik");
+      $("#pat").value = "";
+      throw new Error(y.status + " \u2014 token ge\u00e7ersiz veya izinsiz. Yeni token girin (Actions: Read and write).");
+    }
     if(y.status !== 204) throw new Error("GitHub API " + y.status);
     bildir("Sorgu başlatıldı — sonuçlar birkaç dakika içinde gelir, izleniyor…", "iyi");
     izle();
   }catch(e){
-    bildir("Tetiklenemedi: " + e.message + " (token izinlerini kontrol edin)", "kotu");
+    bildir("Tetiklenemedi: " + e.message, "kotu");
   }finally{
     $("#btnCalistir").disabled = false;
   }
@@ -281,6 +288,13 @@ function izle(){
   }, 15000);
 }
 
+$("#btnToken").addEventListener("click", () => {
+  localStorage.removeItem("ghToken");
+  $("#pat").value = "";
+  $("#patKutu").classList.add("acik");
+  $("#pat").focus();
+  bildir("Yeni token girip \u201cKaydet ve \u00e7al\u0131\u015ft\u0131r\u201da bas\u0131n.", "bekle");
+});
 $("#btnYenile").addEventListener("click", () => yukle());
 $("#btnCalistir").addEventListener("click", () => {
   const token = localStorage.getItem("ghToken");
