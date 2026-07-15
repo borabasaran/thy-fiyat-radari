@@ -168,8 +168,11 @@ def main() -> int:
     OUTPUT_PATH.parent.mkdir(parents=True, exist_ok=True)
     OUTPUT_PATH.write_text(json.dumps(cikti, ensure_ascii=False, indent=2), encoding="utf-8")
     print(f"\n{len(hucreler)} hücre yazıldı → {OUTPUT_PATH} (hata: {hata_sayisi})")
-    # Hücrelerin tamamı hata verdiyse iş akışı da kırmızı görünsün:
-    return 1 if hucreler and hata_sayisi == len(hucreler) else 0
+    if hucreler and hata_sayisi == len(hucreler):
+        # Sonuç dosyası (hata ayrıntılarıyla) yine de commit'lensin diye
+        # iş akışını düşürmüyoruz; durum panoda görünür.
+        print("UYARI: hiçbir hücre için fiyat alınamadı — ayrıntılar results.json içinde.")
+    return 0
 
 
 if __name__ == "__main__":
