@@ -112,23 +112,26 @@
   #editor.acik{display:block}
   #editor h3{font-size:.95rem;letter-spacing:.04em;margin-bottom:4px}
   #editor .ipucu{margin-bottom:14px}
-  .blok{border:1px solid var(--cizgi);border-radius:var(--radius);padding:14px;margin-bottom:12px;
-    background:var(--pano)}
-  .blok-ust{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;gap:10px}
   .blok-ust .no{font-family:"IBM Plex Mono",monospace;font-size:.72rem;color:var(--amber);
     letter-spacing:.12em}
   .sil{background:none;border:1px solid var(--cizgi);color:var(--metin-soluk);border-radius:6px;
-    padding:3px 9px;font-size:.72rem;cursor:pointer}
+    padding:8px 12px;font-size:.72rem;cursor:pointer;height:38px}
   .sil:hover{color:var(--kirmizi);border-color:var(--kirmizi)}
-  .alanlar{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}
   .alan{display:flex;flex-direction:column;gap:4px}
-  .alan.genis{grid-column:1/-1}
   .alan label{font-size:.68rem;color:var(--metin-soluk);letter-spacing:.06em;text-transform:uppercase}
   .alan input,.alan select{background:var(--pano-acik);border:1px solid var(--cizgi);
     border-radius:8px;color:var(--metin);padding:8px 10px;font-size:.85rem;
     font-family:"IBM Plex Mono",monospace;width:100%}
   .alan input:focus,.alan select:focus{outline:2px solid var(--amber);outline-offset:1px}
   .alan .not{font-size:.66rem;color:var(--metin-soluk)}
+  .genel{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
+    border:1px solid var(--cizgi);border-radius:var(--radius);padding:14px;background:var(--pano);
+    margin-bottom:6px}
+  .genel.tekyon #gKonakAlan{display:none}
+  .satir{display:grid;gap:10px;align-items:end;grid-template-columns:110px 1fr auto;
+    border:1px solid var(--cizgi);border-radius:var(--radius);padding:12px;margin-bottom:8px;
+    background:var(--pano)}
+  @media (max-width:560px){.satir{grid-template-columns:1fr}}
   .editor-alt{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:6px}
   #ozet{font-family:"IBM Plex Mono",monospace;font-size:.75rem;color:var(--metin-soluk)}
   footer{margin-top:48px;font-size:.72rem;color:var(--metin-soluk);line-height:1.6;
@@ -162,12 +165,35 @@
 </div>
 
 <section id="editor">
-  <h3>ROTALAR</h3>
-  <p class="ipucu">Her blok bir kalkış noktasını, istediğiniz kadar destinasyonu ve bir tarih aralığını
-  tarar. Destinasyonları virgülle ayırın (ör. BER, MUC, FRA). Kaydettiğinizde sorgu otomatik başlar.</p>
+  <h3>TÜM ROTALAR İÇİN</h3>
+  <p class="ipucu">Tarih aralığını bir kez burada belirleyin; aşağıdaki tüm rotalara uygulanır.</p>
+  <div class="genel">
+    <div class="alan"><label>Seyahat tipi</label>
+      <select id="gTip">
+        <option value="R">Gidiş-dönüş</option>
+        <option value="O">Tek yön</option>
+      </select></div>
+    <div class="alan"><label>Gidiş: ilk tarih</label>
+      <input id="gBas" type="date"></div>
+    <div class="alan"><label>Gidiş: son tarih</label>
+      <input id="gBit" type="date"></div>
+    <div class="alan"><label>Kaç günde bir</label>
+      <input id="gAdim" type="number" min="1" value="2"></div>
+    <div class="alan" id="gKonakAlan"><label>Dönüş: kaç gece sonra</label>
+      <input id="gKonak" type="number" min="1" value="7"></div>
+    <div class="alan"><label>Aktarma</label>
+      <select id="gAktarma">
+        <option value="">farketmez</option>
+        <option value="0">yalnız aktarmasız</option>
+        <option value="1">en fazla 1</option>
+      </select></div>
+  </div>
+
+  <h3 style="margin-top:22px">ROTALAR</h3>
+  <p class="ipucu">Her satır bir kalkış noktası ve istediğiniz kadar destinasyon. Virgülle ayırın.</p>
   <div id="bloklar"></div>
   <div class="editor-alt">
-    <button class="btn ikincil" id="btnBlokEkle">+ Rota bloğu ekle</button>
+    <button class="btn ikincil" id="btnBlokEkle">+ Rota ekle</button>
     <button class="btn" id="btnKaydet">Kaydet ve sorguyu başlat</button>
     <span id="ozet"></span>
   </div>
@@ -278,30 +304,45 @@ function ciz(veri){
 
 /* ---------- rota editörü ---------- */
 let config = null;
+let genel = { tip:"R", bas:"", bit:"", adim:2, konak:7, aktarma:"" };
 
-const bosBlok = () => ({
-  ad: "", kalkis: "IST", varislar: ["BER"], seyahatTipi: "O", konaklamaGun: 7,
-  tarihler: { baslangic: "", bitis: "", adimGun: 2 }
-});
-
-function blokNormalize(b){
-  // config'te tekil 'varis' de olabilir — editör hepsini listeye çevirir
-  const kopya = JSON.parse(JSON.stringify(b));
-  if(!kopya.varislar) kopya.varislar = kopya.varis ? [kopya.varis] : [];
-  delete kopya.varis;
-  if(!kopya.tarihler) kopya.tarihler = {baslangic:"", bitis:"", adimGun:2};
-  if(kopya.tarihler.liste && !kopya.tarihler.baslangic){
-    const l = kopya.tarihler.liste.slice().sort();
-    kopya.tarihler = { baslangic: l[0]||"", bitis: l[l.length-1]||"", adimGun: 1 };
-  }
-  return kopya;
-}
+const bosBlok = () => ({ kalkis:"IST", varislar:[] });
 
 async function configYukle(){
   const y = await fetch("config.json?t=" + Date.now(), {cache:"no-store"});
   const ham = await y.json();
-  config = ham;
-  config.rotalar = (ham.rotalar || []).map(blokNormalize);
+  config = { ayarlar: ham.ayarlar || {}, rotalar: [] };
+
+  // Mevcut config'ten rotaları ve genel ayarları çıkar
+  for(const b of (ham.rotalar || [])){
+    const varislar = b.varislar || (b.varis ? [b.varis] : []);
+    config.rotalar.push({ kalkis: b.kalkis || "IST", varislar });
+    const t = b.tarihler || {};
+    const bas = t.baslangic || (t.liste ? t.liste.slice().sort()[0] : "");
+    const bit = t.bitis || (t.liste ? t.liste.slice().sort().pop() : "");
+    if(bas && !genel.bas) genel.bas = bas;
+    if(bit && !genel.bit) genel.bit = bit;
+    if(t.adimGun) genel.adim = t.adimGun;
+    if(b.seyahatTipi) genel.tip = b.seyahatTipi;
+    if(b.konaklamaGun) genel.konak = b.konaklamaGun;
+    if(b.maxAktarma !== undefined) genel.aktarma = String(b.maxAktarma);
+  }
+  if(!genel.bas){                       // hiç tarih yoksa: yarından itibaren 2 hafta
+    const d = new Date(); d.setDate(d.getDate() + 1);
+    genel.bas = d.toISOString().slice(0,10);
+    d.setDate(d.getDate() + 14);
+    genel.bit = d.toISOString().slice(0,10);
+  }
+}
+
+function genelCiz(){
+  $("#gTip").value = genel.tip;
+  $("#gBas").value = genel.bas;
+  $("#gBit").value = genel.bit;
+  $("#gAdim").value = genel.adim;
+  $("#gKonak").value = genel.konak;
+  $("#gAktarma").value = genel.aktarma;
+  document.querySelector(".genel").classList.toggle("tekyon", genel.tip === "O");
 }
 
 function editorCiz(){
@@ -309,83 +350,48 @@ function editorCiz(){
   kap.innerHTML = "";
   config.rotalar.forEach((b, i) => {
     const d = document.createElement("div");
-    d.className = "blok";
+    d.className = "satir";
     d.innerHTML = `
-      <div class="blok-ust">
-        <span class="no">BLOK ${i+1}</span>
-        <button class="sil" data-sil="${i}">Bloğu sil</button>
-      </div>
-      <div class="alanlar">
-        <div class="alan"><label>Başlık</label>
-          <input data-i="${i}" data-k="ad" value="${b.ad||""}" placeholder="ör. Ağustos taraması"></div>
-        <div class="alan"><label>Kalkış</label>
-          <input data-i="${i}" data-k="kalkis" value="${b.kalkis||""}" placeholder="IST" maxlength="3"></div>
-        <div class="alan"><label>Seyahat tipi</label>
-          <select data-i="${i}" data-k="seyahatTipi">
-            <option value="O"${b.seyahatTipi!=="R"?" selected":""}>Tek yön</option>
-            <option value="R"${b.seyahatTipi==="R"?" selected":""}>Gidiş-dönüş</option>
-          </select></div>
-        <div class="alan"><label>Konaklama (gece)</label>
-          <input data-i="${i}" data-k="konaklamaGun" type="number" min="1" value="${b.konaklamaGun??7}"
-            ${b.seyahatTipi==="R"?"":"disabled"}>
-          <span class="not">yalnız gidiş-dönüşte</span></div>
-        <div class="alan genis"><label>Destinasyonlar (virgülle)</label>
-          <input data-i="${i}" data-k="varislar" value="${(b.varislar||[]).join(", ")}"
-            placeholder="BER, MUC, FRA, CGN"></div>
-        <div class="alan"><label>Başlangıç tarihi</label>
-          <input data-i="${i}" data-k="baslangic" type="date" value="${b.tarihler.baslangic||""}"></div>
-        <div class="alan"><label>Bitiş tarihi</label>
-          <input data-i="${i}" data-k="bitis" type="date" value="${b.tarihler.bitis||""}"></div>
-        <div class="alan"><label>Kaç günde bir</label>
-          <input data-i="${i}" data-k="adimGun" type="number" min="1" value="${b.tarihler.adimGun??1}"></div>
-        <div class="alan"><label>Aktarma</label>
-          <select data-i="${i}" data-k="maxAktarma">
-            <option value=""${b.maxAktarma===undefined?" selected":""}>farketmez</option>
-            <option value="0"${b.maxAktarma===0?" selected":""}>yalnız aktarmasız</option>
-            <option value="1"${b.maxAktarma===1?" selected":""}>en fazla 1</option>
-          </select></div>
-      </div>`;
+      <div class="alan"><label>Kalkış</label>
+        <input data-i="${i}" data-k="kalkis" value="${b.kalkis||""}" placeholder="IST" maxlength="3"></div>
+      <div class="alan"><label>Varış — virgülle çoklu</label>
+        <input data-i="${i}" data-k="varislar" value="${(b.varislar||[]).join(", ")}"
+          placeholder="BER, MUC, FRA, CGN"></div>
+      <button class="sil" data-sil="${i}">Sil</button>`;
     kap.appendChild(d);
   });
   ozetle();
 }
 
 function ozetle(){
+  const d1 = new Date(genel.bas), d2 = new Date(genel.bit);
   let hucre = 0;
-  for(const b of config.rotalar){
-    const d1 = new Date(b.tarihler.baslangic), d2 = new Date(b.tarihler.bitis);
-    if(isNaN(d1) || isNaN(d2) || d2 < d1) continue;
+  if(!isNaN(d1) && !isNaN(d2) && d2 >= d1){
     const gun = Math.floor((d2 - d1) / 86400000) + 1;
-    const tarihSayisi = Math.ceil(gun / Math.max(1, b.tarihler.adimGun||1));
-    hucre += tarihSayisi * (b.varislar?.length || 0);
+    const tarihSayisi = Math.ceil(gun / Math.max(1, genel.adim || 1));
+    for(const b of config.rotalar) hucre += tarihSayisi * (b.varislar?.length || 0);
   }
   const dk = Math.max(1, Math.round(hucre * 7 / 60));
   $("#ozet").textContent = hucre ? `${hucre} hücre — yaklaşık ${dk} dakika sürer` : "";
 }
 
+document.querySelector(".genel").addEventListener("input", () => {
+  genel.tip = $("#gTip").value;
+  genel.bas = $("#gBas").value;
+  genel.bit = $("#gBit").value;
+  genel.adim = Math.max(1, +$("#gAdim").value || 1);
+  genel.konak = Math.max(1, +$("#gKonak").value || 1);
+  genel.aktarma = $("#gAktarma").value;
+  document.querySelector(".genel").classList.toggle("tekyon", genel.tip === "O");
+  ozetle();
+});
+
 $("#bloklar").addEventListener("input", e => {
   const t = e.target, i = t.dataset.i, k = t.dataset.k;
   if(i === undefined || !k) return;
   const b = config.rotalar[+i];
-  if(k === "varislar"){
-    b.varislar = t.value.split(",").map(x => x.trim().toUpperCase()).filter(Boolean);
-  }else if(k === "kalkis"){
-    b.kalkis = t.value.trim().toUpperCase();
-  }else if(["baslangic","bitis"].includes(k)){
-    b.tarihler[k] = t.value;
-  }else if(k === "adimGun"){
-    b.tarihler.adimGun = Math.max(1, +t.value || 1);
-  }else if(k === "konaklamaGun"){
-    b.konaklamaGun = Math.max(1, +t.value || 1);
-  }else if(k === "maxAktarma"){
-    if(t.value === "") delete b.maxAktarma; else b.maxAktarma = +t.value;
-  }else if(k === "seyahatTipi"){
-    b.seyahatTipi = t.value;
-    editorCiz();
-    return;
-  }else{
-    b[k] = t.value;
-  }
+  if(k === "varislar") b.varislar = t.value.split(",").map(x => x.trim().toUpperCase()).filter(Boolean);
+  else b.kalkis = t.value.trim().toUpperCase();
   ozetle();
 });
 
@@ -407,6 +413,7 @@ $("#btnEditor").addEventListener("click", async () => {
   try{
     if(!config) await configYukle();
     if(!config.rotalar.length) config.rotalar.push(bosBlok());
+    genelCiz();
     editorCiz();
     e.classList.add("acik");
     e.scrollIntoView({behavior:"smooth", block:"start"});
@@ -416,15 +423,15 @@ $("#btnEditor").addEventListener("click", async () => {
 });
 
 function dogrula(){
+  if(!genel.bas || !genel.bit) return "Gidiş tarih aralığını doldurun.";
+  if(new Date(genel.bit) < new Date(genel.bas)) return "Son tarih ilk tarihten önce olamaz.";
+  if(!config.rotalar.length) return "En az bir rota ekleyin.";
   for(const [i, b] of config.rotalar.entries()){
     const n = i + 1;
-    if(!/^[A-Z]{3}$/.test(b.kalkis||"")) return `Blok ${n}: kalkış 3 harfli havalimanı kodu olmalı (ör. IST).`;
-    if(!b.varislar?.length) return `Blok ${n}: en az bir destinasyon girin.`;
+    if(!/^[A-Z]{3}$/.test(b.kalkis||"")) return `${n}. rota: kalkış 3 harfli kod olmalı (ör. IST).`;
+    if(!b.varislar?.length) return `${n}. rota: en az bir varış girin.`;
     const hatali = b.varislar.find(v => !/^[A-Z]{3}$/.test(v));
-    if(hatali) return `Blok ${n}: "${hatali}" geçerli bir havalimanı kodu değil.`;
-    if(!b.tarihler.baslangic || !b.tarihler.bitis) return `Blok ${n}: tarih aralığını doldurun.`;
-    if(new Date(b.tarihler.bitis) < new Date(b.tarihler.baslangic))
-      return `Blok ${n}: bitiş tarihi başlangıçtan önce olamaz.`;
+    if(hatali) return `${n}. rota: "${hatali}" geçerli bir havalimanı kodu değil.`;
   }
   return null;
 }
@@ -438,35 +445,31 @@ function b64(metin){
 async function configKaydet(token){
   const depo = depoBilgisi();
   if(!depo){ bildir("Depo adı adresten çözülemedi.", "kotu"); return false; }
-  const yol = "docs/config.json";
-  const url = `https://api.github.com/repos/${depo.owner}/${depo.repo}/contents/${yol}`;
+  const url = `https://api.github.com/repos/${depo.owner}/${depo.repo}/contents/docs/config.json`;
   const bas = { "Authorization":"Bearer " + token, "Accept":"application/vnd.github+json",
                 "X-GitHub-Api-Version":"2022-11-28" };
   const mevcut = await fetch(url + "?ref=main&t=" + Date.now(), {headers:bas, cache:"no-store"});
   if(mevcut.status === 401 || mevcut.status === 403){
     localStorage.removeItem("ghToken"); $("#patKutu").classList.add("acik"); $("#pat").value = "";
-    bildir(mevcut.status + " \u2014 token ge\u00e7ersiz/izinsiz. Yeni token: Contents + Actions = Read and write.", "kotu");
+    bildir(mevcut.status + " — token geçersiz/izinsiz. Gereken: Contents + Actions = Read and write.", "kotu");
     return false;
   }
   if(!mevcut.ok){ bildir("config.json okunamadı (HTTP " + mevcut.status + ")", "kotu"); return false; }
   const sha = (await mevcut.json()).sha;
 
-  const temiz = JSON.parse(JSON.stringify(config));
-  temiz.rotalar = temiz.rotalar.map(b => {
-    const y = { ad: b.ad || `${b.kalkis} taraması`, kalkis: b.kalkis, varislar: b.varislar,
-                seyahatTipi: b.seyahatTipi || "O",
-                tarihler: { baslangic: b.tarihler.baslangic, bitis: b.tarihler.bitis,
-                            adimGun: b.tarihler.adimGun || 1 } };
-    if(y.seyahatTipi === "R") y.konaklamaGun = b.konaklamaGun || 7;
-    if(b.maxAktarma !== undefined) y.maxAktarma = b.maxAktarma;
-    return y;
-  });
+  const yeni = { ayarlar: config.ayarlar, rotalar: config.rotalar.map(b => {
+    const r = { kalkis: b.kalkis, varislar: b.varislar, seyahatTipi: genel.tip,
+                tarihler: { baslangic: genel.bas, bitis: genel.bit, adimGun: genel.adim } };
+    if(genel.tip === "R") r.konaklamaGun = genel.konak;
+    if(genel.aktarma !== "") r.maxAktarma = +genel.aktarma;
+    return r;
+  })};
 
   const y = await fetch(url, { method:"PUT", headers:bas, body: JSON.stringify({
-    message: "Rotalar panodan güncellendi", content: b64(JSON.stringify(temiz, null, 2)),
+    message: "Rotalar panodan güncellendi", content: b64(JSON.stringify(yeni, null, 2)),
     sha, branch: "main" }) });
   if(!y.ok){
-    bildir("Kaydedilemedi (HTTP " + y.status + ") \u2014 token'da Contents: Read and write izni var m\u0131?", "kotu");
+    bildir("Kaydedilemedi (HTTP " + y.status + ") — token'da Contents: Read and write izni var mı?", "kotu");
     return false;
   }
   return true;
@@ -475,7 +478,7 @@ async function configKaydet(token){
 $("#btnKaydet").addEventListener("click", async () => {
   const hata = dogrula();
   if(hata){ bildir(hata, "kotu"); return; }
-  let token = localStorage.getItem("ghToken");
+  const token = localStorage.getItem("ghToken");
   if(!token){
     $("#patKutu").classList.add("acik"); $("#pat").focus();
     bildir("Önce token girin (Contents + Actions: Read and write).", "bekle");
@@ -487,7 +490,7 @@ $("#btnKaydet").addEventListener("click", async () => {
     if(await configKaydet(token)){
       bildir("Rotalar kaydedildi — sorgu başlatılıyor…", "iyi");
       $("#editor").classList.remove("acik");
-      setTimeout(() => tetikle(token), 2000);   // commit'in işlenmesi için kısa pay
+      setTimeout(() => tetikle(token), 2000);
     }
   }catch(e){
     bildir("Kaydetme hatası: " + e.message, "kotu");
@@ -519,7 +522,7 @@ async function tetikle(token){
       localStorage.removeItem("ghToken");
       $("#patKutu").classList.add("acik");
       $("#pat").value = "";
-      throw new Error(y.status + " \u2014 token ge\u00e7ersiz veya izinsiz. Yeni token girin (Actions: Read and write).");
+      throw new Error(y.status + " — token geçersiz veya izinsiz. Yeni token girin (Actions: Read and write).");
     }
     if(y.status !== 204) throw new Error("GitHub API " + y.status);
     bildir("Sorgu başlatıldı — sonuçlar birkaç dakika içinde gelir, izleniyor…", "iyi");
@@ -551,7 +554,7 @@ $("#btnToken").addEventListener("click", () => {
   $("#pat").value = "";
   $("#patKutu").classList.add("acik");
   $("#pat").focus();
-  bildir("Yeni token girip \u201cKaydet ve \u00e7al\u0131\u015ft\u0131r\u201da bas\u0131n.", "bekle");
+  bildir("Yeni token girip “Kaydet ve çalıştır”a basın.", "bekle");
 });
 $("#btnYenile").addEventListener("click", () => yukle());
 $("#btnCalistir").addEventListener("click", () => {
