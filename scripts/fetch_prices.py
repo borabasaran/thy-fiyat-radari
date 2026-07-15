@@ -16,9 +16,24 @@ Kurulum: pip install fast-flights
 import datetime as dt
 import json
 import os
+import subprocess
 import sys
 import time
 from pathlib import Path
+
+
+def _bagimliliklari_garanti_et():
+    """fast-flights 3.0.2, typing_extensions bağımlılığını beyan etmiyor
+    (paketleme hatası); eksikse çalışma anında kur."""
+    try:
+        import typing_extensions  # noqa: F401
+    except ModuleNotFoundError:
+        subprocess.check_call(
+            [sys.executable, "-m", "pip", "install", "--quiet", "typing_extensions"]
+        )
+
+
+_bagimliliklari_garanti_et()
 
 from fast_flights import FlightQuery, Passengers, create_query, get_flights
 from fast_flights.exceptions import FlightsNotFound
