@@ -1,9 +1,9 @@
 {
-  "guncellemeZamani": "2026-07-15T13:18:28+00:00",
+  "guncellemeZamani": "2026-07-15T13:50:11+00:00",
   "kaynak": "google-flights (Turkish Airlines filtreli)",
   "sorgulananBolge": "Avrupa",
-  "hucreSayisi": 39,
-  "hataSayisi": 4,
+  "hucreSayisi": 45,
+  "hataSayisi": 10,
   "sonuclar": [
     {
       "rota": "IST → SHA",
@@ -375,8 +375,8 @@
       "gidisTarihi": "2026-08-07",
       "bolge": "Avrupa",
       "donusTarihi": "2026-08-14",
-      "durum": "fiyat-bulunamadi",
-      "detay": "no flights found; received error"
+      "durum": "hata",
+      "detay": "TypeError: 'NoneType' object is not subscriptable"
     },
     {
       "rota": "SAW → BER",
@@ -397,8 +397,8 @@
       "gidisTarihi": "2026-08-01",
       "bolge": "Avrupa",
       "donusTarihi": "2026-08-08",
-      "durum": "fiyat-bulunamadi",
-      "detay": "no flights found; received error"
+      "durum": "hata",
+      "detay": "TypeError: 'NoneType' object is not subscriptable"
     },
     {
       "rota": "SAW → MUC",
@@ -408,8 +408,8 @@
       "gidisTarihi": "2026-08-07",
       "bolge": "Avrupa",
       "donusTarihi": "2026-08-14",
-      "durum": "hata",
-      "detay": "TypeError: 'NoneType' object is not subscriptable"
+      "durum": "fiyat-bulunamadi",
+      "detay": "no flights found; received error"
     },
     {
       "rota": "SAW → MUC",
@@ -419,8 +419,8 @@
       "gidisTarihi": "2026-08-13",
       "bolge": "Avrupa",
       "donusTarihi": "2026-08-20",
-      "durum": "fiyat-bulunamadi",
-      "detay": "no flights found; received error"
+      "durum": "hata",
+      "detay": "TypeError: 'NoneType' object is not subscriptable"
     },
     {
       "rota": "SAW → FRA",
@@ -441,8 +441,8 @@
       "gidisTarihi": "2026-08-07",
       "bolge": "Avrupa",
       "donusTarihi": "2026-08-14",
-      "durum": "hata",
-      "detay": "TypeError: 'NoneType' object is not subscriptable"
+      "durum": "fiyat-bulunamadi",
+      "detay": "no flights found; received error"
     },
     {
       "rota": "SAW → FRA",
@@ -452,8 +452,8 @@
       "gidisTarihi": "2026-08-13",
       "bolge": "Avrupa",
       "donusTarihi": "2026-08-20",
-      "durum": "fiyat-bulunamadi",
-      "detay": "no flights found; received error"
+      "durum": "hata",
+      "detay": "TypeError: 'NoneType' object is not subscriptable"
     },
     {
       "rota": "SAW → VIE",
@@ -474,8 +474,8 @@
       "gidisTarihi": "2026-08-07",
       "bolge": "Avrupa",
       "donusTarihi": "2026-08-14",
-      "durum": "fiyat-bulunamadi",
-      "detay": "no flights found; received error"
+      "durum": "hata",
+      "detay": "TypeError: 'NoneType' object is not subscriptable"
     },
     {
       "rota": "SAW → VIE",
@@ -487,6 +487,81 @@
       "donusTarihi": "2026-08-20",
       "durum": "hata",
       "detay": "TypeError: 'NoneType' object is not subscriptable"
+    },
+    {
+      "rota": "SAW → AMS",
+      "kalkis": "SAW",
+      "varis": "AMS",
+      "seyahatTipi": "R",
+      "gidisTarihi": "2026-08-01",
+      "bolge": "Avrupa",
+      "donusTarihi": "2026-08-08",
+      "durum": "hata",
+      "detay": "TypeError: 'NoneType' object is not subscriptable"
+    },
+    {
+      "rota": "SAW → AMS",
+      "kalkis": "SAW",
+      "varis": "AMS",
+      "seyahatTipi": "R",
+      "gidisTarihi": "2026-08-07",
+      "bolge": "Avrupa",
+      "donusTarihi": "2026-08-14",
+      "durum": "hata",
+      "detay": "TypeError: 'NoneType' object is not subscriptable"
+    },
+    {
+      "rota": "SAW → AMS",
+      "kalkis": "SAW",
+      "varis": "AMS",
+      "seyahatTipi": "R",
+      "gidisTarihi": "2026-08-13",
+      "bolge": "Avrupa",
+      "donusTarihi": "2026-08-20",
+      "durum": "hata",
+      "detay": "TypeError: 'NoneType' object is not subscriptable"
+    },
+    {
+      "rota": "IST → FCO",
+      "kalkis": "IST",
+      "varis": "FCO",
+      "seyahatTipi": "R",
+      "gidisTarihi": "2026-08-01",
+      "bolge": "Avrupa",
+      "donusTarihi": "2026-08-08",
+      "tutar": 32371.0,
+      "paraBirimi": "TRY",
+      "adayFiyatSayisi": 4,
+      "durum": "ok",
+      "aktarma": 0
+    },
+    {
+      "rota": "IST → FCO",
+      "kalkis": "IST",
+      "varis": "FCO",
+      "seyahatTipi": "R",
+      "gidisTarihi": "2026-08-07",
+      "bolge": "Avrupa",
+      "donusTarihi": "2026-08-14",
+      "tutar": 28376.0,
+      "paraBirimi": "TRY",
+      "adayFiyatSayisi": 4,
+      "durum": "ok",
+      "aktarma": 0
+    },
+    {
+      "rota": "IST → FCO",
+      "kalkis": "IST",
+      "varis": "FCO",
+      "seyahatTipi": "R",
+      "gidisTarihi": "2026-08-13",
+      "bolge": "Avrupa",
+      "donusTarihi": "2026-08-20",
+      "tutar": 21468.0,
+      "paraBirimi": "TRY",
+      "adayFiyatSayisi": 4,
+      "durum": "ok",
+      "aktarma": 0
     }
   ]
 }
