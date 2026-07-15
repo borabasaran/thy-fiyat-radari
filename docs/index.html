@@ -8,16 +8,10 @@
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
 <style>
   :root{
-    --pano:#0d1521;        /* kalkış panosu laciverti */
-    --pano-acik:#16202f;
-    --cizgi:#243144;
-    --metin:#e8edf4;
-    --metin-soluk:#8b98ab;
-    --kirmizi:#e5233d;     /* bayrak taşıyıcı kırmızısı */
-    --amber:#ffb547;       /* pano ışığı */
-    --yesil:#3ecf8e;
-    --radius:10px;
-    font-size:16px;
+    --pano:#0d1521; --pano-acik:#16202f; --cizgi:#243144;
+    --metin:#e8edf4; --metin-soluk:#8b98ab;
+    --kirmizi:#e5233d; --amber:#ffb547; --yesil:#3ecf8e;
+    --radius:10px; font-size:16px;
   }
   *{box-sizing:border-box;margin:0;padding:0}
   body{
@@ -64,7 +58,8 @@
   #mesaj.iyi{color:var(--yesil)} #mesaj.kotu{color:var(--kirmizi)} #mesaj.bekle{color:var(--amber)}
 
   /* ---------- bölge sekmeleri ---------- */
-  #sekmeler{display:flex;flex-wrap:wrap;gap:2px;margin:0 0 26px;border-bottom:1px solid var(--cizgi)}
+  #sekmeler{display:flex;flex-wrap:wrap;gap:2px;margin:0;border-bottom:1px solid var(--cizgi);
+    position:sticky;top:0;background:var(--pano);z-index:20}
   #sekmeler button{
     background:none;border:none;border-bottom:2px solid transparent;color:var(--metin-soluk);
     padding:10px 18px;font-weight:700;font-size:.85rem;letter-spacing:.04em;cursor:pointer;
@@ -120,10 +115,16 @@
     border:1px dashed var(--cizgi);border-radius:var(--radius);padding:40px;
     text-align:center;color:var(--metin-soluk);line-height:1.6;
   }
-  /* ---------- rota editörü ---------- */
-  #editor{display:none;margin:0 0 34px;border:1px solid var(--cizgi);border-radius:var(--radius);
-    background:var(--pano-acik);padding:18px}
-  #editor.acik{display:block}
+  /* ---------- rota editörü (modal) ---------- */
+  #ortu{position:fixed;inset:0;background:#060a12cc;backdrop-filter:blur(3px);z-index:40;
+    display:none;align-items:flex-start;justify-content:center;padding:5vh 16px;overflow-y:auto}
+  #ortu.acik{display:flex}
+  #editor{width:min(880px,100%);border:1px solid var(--cizgi);border-radius:var(--radius);
+    background:var(--pano-acik);padding:22px;position:relative;
+    box-shadow:0 24px 60px #000a}
+  #kapat{position:absolute;top:14px;right:14px;background:none;border:1px solid var(--cizgi);
+    color:var(--metin-soluk);border-radius:8px;padding:4px 10px;cursor:pointer;font-size:.8rem}
+  #kapat:hover{color:var(--metin);border-color:var(--metin-soluk)}
   #editor h3{font-size:.95rem;letter-spacing:.04em;margin-bottom:4px}
   #editor .ipucu{margin-bottom:14px}
   .sil{background:none;border:1px solid var(--cizgi);color:var(--metin-soluk);border-radius:6px;
@@ -166,6 +167,7 @@
   <button class="btn ikincil" id="btnYenile">Sonuçları yenile</button>
   <button class="btn ikincil" id="btnEditor">Rotaları düzenle</button>
   <button class="btn ikincil" id="btnToken">Token'ı gir / değiştir</button>
+  <a class="btn ikincil" href="gecmis.html" style="text-decoration:none;display:inline-block">Fiyat geçmişi ↗</a>
   <span id="mesaj" aria-live="polite"></span>
 </div>
 <div id="patKutu">
@@ -177,7 +179,8 @@
   Token yalnızca bu tarayıcıda saklanır.</p>
 </div>
 
-<section id="editor">
+<div id="ortu"><section id="editor">
+  <button id="kapat">✕ kapat</button>
   <h3>TARİH AYARLARI (TÜM SEKMELER İÇİN)</h3>
   <p class="ipucu">Tarih aralığını bir kez burada belirleyin; tüm rotalara uygulanır.</p>
   <div class="genel">
@@ -204,14 +207,14 @@
 
   <h3 style="margin-top:22px" id="editorBaslik">ROTALAR</h3>
   <p class="ipucu">Yalnız seçili sekmenin rotaları görünür. Her satır bir kalkış noktası ve istediğiniz
-  kadar destinasyon (virgülle). Başka bölge için üstteki sekmeye geçin.</p>
+  kadar destinasyon (virgülle). Başka bölge için önce üstteki sekmeye geçin.</p>
   <div id="bloklar"></div>
   <div class="editor-alt">
     <button class="btn ikincil" id="btnBlokEkle">+ Rota ekle</button>
     <button class="btn" id="btnKaydet">Kaydet ve bu sekmeyi sorgula</button>
     <span id="ozet"></span>
   </div>
-</section>
+</section></div>
 
 <main id="icerik">
   <div class="bos">Veriler yükleniyor…</div>
@@ -282,7 +285,7 @@ $("#sekmeler").addEventListener("click", e => {
   $("#btnCalistir").textContent = `${b} sorgusunu çalıştır`;
   sekmeCiz();
   if(sonVeri) ciz(sonVeri);
-  if($("#editor").classList.contains("acik")) editorCiz();   // editör de bu sekmeyi göstersin
+  if($("#ortu").classList.contains("acik")) editorCiz();     // açıksa editör de bu sekmeyi göstersin
 });
 
 function ciz(veri){
@@ -455,19 +458,24 @@ $("#btnBlokEkle").addEventListener("click", () => {
   editorCiz();
 });
 
+function editorAc(ac){
+  $("#ortu").classList.toggle("acik", ac);
+  document.body.style.overflow = ac ? "hidden" : "";
+}
+
 $("#btnEditor").addEventListener("click", async () => {
-  const e = $("#editor");
-  if(e.classList.contains("acik")){ e.classList.remove("acik"); return; }
   try{
     if(!config) await configYukle();
     genelCiz();
     editorCiz();
-    e.classList.add("acik");
-    e.scrollIntoView({behavior:"smooth", block:"start"});
+    editorAc(true);
   }catch(err){
     bildir("Yapılandırma okunamadı: " + err.message, "kotu");
   }
 });
+$("#kapat").addEventListener("click", () => editorAc(false));
+$("#ortu").addEventListener("click", e => { if(e.target.id === "ortu") editorAc(false); });
+document.addEventListener("keydown", e => { if(e.key === "Escape") editorAc(false); });
 
 function dogrula(){
   if(!genel.bas || !genel.bit) return "Gidiş tarih aralığını doldurun.";
@@ -529,6 +537,7 @@ $("#btnKaydet").addEventListener("click", async () => {
   if(hata){ bildir(hata, "kotu"); return; }
   const token = localStorage.getItem("ghToken");
   if(!token){
+    editorAc(false);
     $("#patKutu").classList.add("acik"); $("#pat").focus();
     bildir("Önce token girin (Contents + Actions: Read and write).", "bekle");
     return;
@@ -538,7 +547,7 @@ $("#btnKaydet").addEventListener("click", async () => {
   try{
     if(await configKaydet(token)){
       bildir(`Rotalar kaydedildi — ${aktifSekme} sorgusu başlatılıyor…`, "iyi");
-      $("#editor").classList.remove("acik");
+      editorAc(false);                       // pano öne çıksın
       setTimeout(() => tetikle(token), 2000);
     }
   }catch(e){
