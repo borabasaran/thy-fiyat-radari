@@ -1,9 +1,9 @@
 {
-  "guncellemeZamani": "2026-07-15T14:25:07+00:00",
+  "guncellemeZamani": "2026-07-15T14:57:48+00:00",
   "kaynak": "google-flights (Turkish Airlines filtreli)",
   "sorgulananBolge": "Avrupa",
   "hucreSayisi": 45,
-  "hataSayisi": 14,
+  "hataSayisi": 15,
   "sonuclar": [
     {
       "rota": "IST → PVG",
@@ -536,8 +536,8 @@
       "gidisTarihi": "2026-08-13",
       "bolge": "Avrupa",
       "donusTarihi": "2026-08-20",
-      "durum": "fiyat-bulunamadi",
-      "detay": "no flights found; received error"
+      "durum": "hata",
+      "detay": "TypeError: 'NoneType' object is not subscriptable"
     },
     {
       "rota": "IST → FCO",
