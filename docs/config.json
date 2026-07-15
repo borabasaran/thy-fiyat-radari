@@ -218,6 +218,184 @@
       },
       "konaklamaGun": 7,
       "maxAktarma": 0
+    },
+    {
+      "kalkis": "IST",
+      "varislar": [
+        "JFK"
+      ],
+      "bolge": "Amerika",
+      "seyahatTipi": "R",
+      "tarihler": {
+        "baslangic": "2026-08-01",
+        "bitis": "2026-08-15",
+        "adimGun": 6
+      },
+      "konaklamaGun": 7,
+      "maxAktarma": 0
+    },
+    {
+      "kalkis": "IST",
+      "varislar": [
+        "ORD"
+      ],
+      "bolge": "Amerika",
+      "seyahatTipi": "R",
+      "tarihler": {
+        "baslangic": "2026-08-01",
+        "bitis": "2026-08-15",
+        "adimGun": 6
+      },
+      "konaklamaGun": 7,
+      "maxAktarma": 0
+    },
+    {
+      "kalkis": "IST",
+      "varislar": [
+        "BOS"
+      ],
+      "bolge": "Amerika",
+      "seyahatTipi": "R",
+      "tarihler": {
+        "baslangic": "2026-08-01",
+        "bitis": "2026-08-15",
+        "adimGun": 6
+      },
+      "konaklamaGun": 7,
+      "maxAktarma": 0
+    },
+    {
+      "kalkis": "IST",
+      "varislar": [
+        "DWF"
+      ],
+      "bolge": "Amerika",
+      "seyahatTipi": "R",
+      "tarihler": {
+        "baslangic": "2026-08-01",
+        "bitis": "2026-08-15",
+        "adimGun": 6
+      },
+      "konaklamaGun": 7,
+      "maxAktarma": 0
+    },
+    {
+      "kalkis": "IST",
+      "varislar": [
+        "IAH"
+      ],
+      "bolge": "Amerika",
+      "seyahatTipi": "R",
+      "tarihler": {
+        "baslangic": "2026-08-01",
+        "bitis": "2026-08-15",
+        "adimGun": 6
+      },
+      "konaklamaGun": 7,
+      "maxAktarma": 0
+    },
+    {
+      "kalkis": "IST",
+      "varislar": [
+        "IAD"
+      ],
+      "bolge": "Amerika",
+      "seyahatTipi": "R",
+      "tarihler": {
+        "baslangic": "2026-08-01",
+        "bitis": "2026-08-15",
+        "adimGun": 6
+      },
+      "konaklamaGun": 7,
+      "maxAktarma": 0
+    },
+    {
+      "kalkis": "IST",
+      "varislar": [
+        "LAS"
+      ],
+      "bolge": "Amerika",
+      "seyahatTipi": "R",
+      "tarihler": {
+        "baslangic": "2026-08-01",
+        "bitis": "2026-08-15",
+        "adimGun": 6
+      },
+      "konaklamaGun": 7,
+      "maxAktarma": 0
+    },
+    {
+      "kalkis": "IST",
+      "varislar": [
+        "SDU"
+      ],
+      "bolge": "Amerika",
+      "seyahatTipi": "R",
+      "tarihler": {
+        "baslangic": "2026-08-01",
+        "bitis": "2026-08-15",
+        "adimGun": 6
+      },
+      "konaklamaGun": 7,
+      "maxAktarma": 0
+    },
+    {
+      "kalkis": "IST",
+      "varislar": [
+        "EZE"
+      ],
+      "bolge": "Amerika",
+      "seyahatTipi": "R",
+      "tarihler": {
+        "baslangic": "2026-08-01",
+        "bitis": "2026-08-15",
+        "adimGun": 6
+      },
+      "konaklamaGun": 7,
+      "maxAktarma": 0
+    },
+    {
+      "kalkis": "IST",
+      "varislar": [],
+      "bolge": "Amerika",
+      "seyahatTipi": "R",
+      "tarihler": {
+        "baslangic": "2026-08-01",
+        "bitis": "2026-08-15",
+        "adimGun": 6
+      },
+      "konaklamaGun": 7,
+      "maxAktarma": 0
+    },
+    {
+      "kalkis": "SAW",
+      "varislar": [
+        "AMS"
+      ],
+      "bolge": "Avrupa",
+      "seyahatTipi": "R",
+      "tarihler": {
+        "baslangic": "2026-08-01",
+        "bitis": "2026-08-15",
+        "adimGun": 6
+      },
+      "konaklamaGun": 7,
+      "maxAktarma": 0
+    },
+    {
+      "kalkis": "IST",
+      "varislar": [
+        "FCO"
+      ],
+      "bolge": "Avrupa",
+      "seyahatTipi": "R",
+      "tarihler": {
+        "baslangic": "2026-08-01",
+        "bitis": "2026-08-15",
+        "adimGun": 6
+      },
+      "konaklamaGun": 7,
+      "maxAktarma": 0
     }
   ]
 }
