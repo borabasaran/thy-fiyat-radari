@@ -139,6 +139,8 @@ def main() -> int:
                 "seyahatTipi": rota.get("seyahatTipi", "O").upper(),
                 "gidisTarihi": gidis.isoformat(),
             }
+            if rota.get("bolge"):
+                hucre["bolge"] = rota["bolge"]
             if hucre["seyahatTipi"] == "R":
                 hucre["donusTarihi"] = (
                     gidis + dt.timedelta(days=int(rota.get("konaklamaGun", 7)))
