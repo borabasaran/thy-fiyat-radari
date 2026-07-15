@@ -126,8 +126,6 @@
   #editor.acik{display:block}
   #editor h3{font-size:.95rem;letter-spacing:.04em;margin-bottom:4px}
   #editor .ipucu{margin-bottom:14px}
-  .blok-ust .no{font-family:"IBM Plex Mono",monospace;font-size:.72rem;color:var(--amber);
-    letter-spacing:.12em}
   .sil{background:none;border:1px solid var(--cizgi);color:var(--metin-soluk);border-radius:6px;
     padding:8px 12px;font-size:.72rem;cursor:pointer;height:38px}
   .sil:hover{color:var(--kirmizi);border-color:var(--kirmizi)}
@@ -137,12 +135,11 @@
     border-radius:8px;color:var(--metin);padding:8px 10px;font-size:.85rem;
     font-family:"IBM Plex Mono",monospace;width:100%}
   .alan input:focus,.alan select:focus{outline:2px solid var(--amber);outline-offset:1px}
-  .alan .not{font-size:.66rem;color:var(--metin-soluk)}
   .genel{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
     border:1px solid var(--cizgi);border-radius:var(--radius);padding:14px;background:var(--pano);
     margin-bottom:6px}
   .genel.tekyon #gKonakAlan{display:none}
-  .satir{display:grid;gap:10px;align-items:end;grid-template-columns:110px 1fr 140px auto;
+  .satir{display:grid;gap:10px;align-items:end;grid-template-columns:110px 1fr auto;
     border:1px solid var(--cizgi);border-radius:var(--radius);padding:12px;margin-bottom:8px;
     background:var(--pano)}
   @media (max-width:560px){.satir{grid-template-columns:1fr}}
@@ -162,8 +159,10 @@
   </div>
 </header>
 
+<nav id="sekmeler" aria-label="Bölgeler"></nav>
+
 <div class="kontrol">
-  <button class="btn" id="btnCalistir">Sorguyu şimdi çalıştır</button>
+  <button class="btn" id="btnCalistir">Sorguyu çalıştır</button>
   <button class="btn ikincil" id="btnYenile">Sonuçları yenile</button>
   <button class="btn ikincil" id="btnEditor">Rotaları düzenle</button>
   <button class="btn ikincil" id="btnToken">Token'ı gir / değiştir</button>
@@ -179,8 +178,8 @@
 </div>
 
 <section id="editor">
-  <h3>TÜM ROTALAR İÇİN</h3>
-  <p class="ipucu">Tarih aralığını bir kez burada belirleyin; aşağıdaki tüm rotalara uygulanır.</p>
+  <h3>TARİH AYARLARI (TÜM SEKMELER İÇİN)</h3>
+  <p class="ipucu">Tarih aralığını bir kez burada belirleyin; tüm rotalara uygulanır.</p>
   <div class="genel">
     <div class="alan"><label>Seyahat tipi</label>
       <select id="gTip">
@@ -203,18 +202,16 @@
       </select></div>
   </div>
 
-  <h3 style="margin-top:22px">ROTALAR</h3>
-  <p class="ipucu">Her satır bir kalkış noktası ve istediğiniz kadar destinasyon. Virgülle ayırın.
-  Bölge seçimi, sonuçların hangi sekmede görüneceğini belirler.</p>
+  <h3 style="margin-top:22px" id="editorBaslik">ROTALAR</h3>
+  <p class="ipucu">Yalnız seçili sekmenin rotaları görünür. Her satır bir kalkış noktası ve istediğiniz
+  kadar destinasyon (virgülle). Başka bölge için üstteki sekmeye geçin.</p>
   <div id="bloklar"></div>
   <div class="editor-alt">
     <button class="btn ikincil" id="btnBlokEkle">+ Rota ekle</button>
-    <button class="btn" id="btnKaydet">Kaydet ve sorguyu başlat</button>
+    <button class="btn" id="btnKaydet">Kaydet ve bu sekmeyi sorgula</button>
     <span id="ozet"></span>
   </div>
 </section>
-
-<nav id="sekmeler" aria-label="Bölgeler"></nav>
 
 <main id="icerik">
   <div class="bos">Veriler yükleniyor…</div>
@@ -261,24 +258,20 @@ async function yukle(sessiz=false){
     ciz(await y.json());
     if(!sessiz) bildir("", "");
   }catch(e){
-    $("#icerik").innerHTML = `<div class="bos">Sonuç dosyası okunamadı (${e.message}).<br>
-      İlk sorgu henüz çalışmadıysa “Sorguyu şimdi çalıştır”a basın.</div>`;
+    $("#icerik").innerHTML = `<div class="bos">Sonuç dosyası okunamadı (${e.message}).</div>`;
   }
 }
 
 const BOLGELER = ["Avrupa", "Asya", "Amerika"];
-let aktifSekme = localStorage.getItem("aktifSekme") || "Tümü";
+let aktifSekme = localStorage.getItem("aktifSekme") || "Avrupa";
+if(!BOLGELER.includes(aktifSekme)) aktifSekme = "Avrupa";
 let sonVeri = null;
 
 function sekmeCiz(){
-  const say = b => (sonVeri?.sonuclar || [])
-    .filter(h => b === "Tümü" ? true : (h.bolge || "Avrupa") === b).length;
-  const mevcut = ["Tümü", ...BOLGELER].filter(b => b === "Tümü" || say(b) > 0);
-  if(!mevcut.includes(aktifSekme)) aktifSekme = "Tümü";
-  $("#sekmeler").innerHTML = mevcut.map(b =>
+  const say = b => (sonVeri?.sonuclar || []).filter(h => (h.bolge || "Avrupa") === b).length;
+  $("#sekmeler").innerHTML = BOLGELER.map(b =>
     `<button data-b="${b}" class="${b === aktifSekme ? "aktif" : ""}">${b}<span class="sayi">${say(b)}</span></button>`
   ).join("");
-  $("#sekmeler").style.display = mevcut.length > 1 ? "flex" : "none";
 }
 
 $("#sekmeler").addEventListener("click", e => {
@@ -286,8 +279,10 @@ $("#sekmeler").addEventListener("click", e => {
   if(!b) return;
   aktifSekme = b;
   localStorage.setItem("aktifSekme", b);
+  $("#btnCalistir").textContent = `${b} sorgusunu çalıştır`;
   sekmeCiz();
-  ciz(sonVeri);
+  if(sonVeri) ciz(sonVeri);
+  if($("#editor").classList.contains("acik")) editorCiz();   // editör de bu sekmeyi göstersin
 });
 
 function ciz(veri){
@@ -301,14 +296,13 @@ function ciz(veri){
   sekmeCiz();
   const gruplar = new Map();
   for(const h of veri.sonuclar || []){
-    if(aktifSekme !== "Tümü" && (h.bolge || "Avrupa") !== aktifSekme) continue;
+    if((h.bolge || "Avrupa") !== aktifSekme) continue;
     if(!gruplar.has(h.rota)) gruplar.set(h.rota, []);
     gruplar.get(h.rota).push(h);
   }
   if(!gruplar.size){
-    $("#icerik").innerHTML = `<div class="bos">${(veri.sonuclar||[]).length
-      ? `“${aktifSekme}” sekmesinde rota yok. “Rotaları düzenle” ile ekleyebilirsiniz.`
-      : "Henüz sonuç yok. “Rotaları düzenle” ile rota ekleyip sorguyu başlatın."}</div>`;
+    $("#icerik").innerHTML = `<div class="bos">“${aktifSekme}” için henüz sonuç yok.<br>
+      “Rotaları düzenle” ile bu sekmeye rota ekleyip “${aktifSekme} sorgusunu çalıştır”a basın.</div>`;
     return;
   }
 
@@ -352,7 +346,7 @@ function ciz(veri){
 let config = null;
 let genel = { tip:"R", bas:"", bit:"", adim:2, konak:7, aktarma:"" };
 
-const bosBlok = () => ({ kalkis:"IST", varislar:[], bolge:"Avrupa" });
+const bosBlok = () => ({ kalkis:"IST", varislar:[], bolge: aktifSekme });
 
 async function configYukle(){
   const y = await fetch("config.json?t=" + Date.now(), {cache:"no-store"});
@@ -394,7 +388,9 @@ function genelCiz(){
 function editorCiz(){
   const kap = $("#bloklar");
   kap.innerHTML = "";
+  $("#editorBaslik").textContent = `${aktifSekme.toUpperCase()} ROTALARI`;
   config.rotalar.forEach((b, i) => {
+    if((b.bolge || "Avrupa") !== aktifSekme) return;      // yalnız aktif sekme
     const d = document.createElement("div");
     d.className = "satir";
     d.innerHTML = `
@@ -403,14 +399,12 @@ function editorCiz(){
       <div class="alan"><label>Varış — virgülle çoklu</label>
         <input data-i="${i}" data-k="varislar" value="${(b.varislar||[]).join(", ")}"
           placeholder="BER, MUC, FRA, CGN"></div>
-      <div class="alan"><label>Bölge (sekme)</label>
-        <select data-i="${i}" data-k="bolge">
-          ${["Avrupa","Asya","Amerika"].map(x =>
-            `<option value="${x}"${(b.bolge||"Avrupa") === x ? " selected" : ""}>${x}</option>`).join("")}
-        </select></div>
       <button class="sil" data-sil="${i}">Sil</button>`;
     kap.appendChild(d);
   });
+  if(!kap.children.length){
+    kap.innerHTML = `<p class="ipucu">Bu sekmede henüz rota yok — “+ Rota ekle”ye basın.</p>`;
+  }
   ozetle();
 }
 
@@ -420,10 +414,13 @@ function ozetle(){
   if(!isNaN(d1) && !isNaN(d2) && d2 >= d1){
     const gun = Math.floor((d2 - d1) / 86400000) + 1;
     const tarihSayisi = Math.ceil(gun / Math.max(1, genel.adim || 1));
-    for(const b of config.rotalar) hucre += tarihSayisi * (b.varislar?.length || 0);
+    for(const b of config.rotalar){
+      if((b.bolge || "Avrupa") !== aktifSekme) continue;
+      hucre += tarihSayisi * (b.varislar?.length || 0);
+    }
   }
   const dk = Math.max(1, Math.round(hucre * 7 / 60));
-  $("#ozet").textContent = hucre ? `${hucre} hücre — yaklaşık ${dk} dakika sürer` : "";
+  $("#ozet").textContent = hucre ? `${aktifSekme}: ${hucre} hücre — yaklaşık ${dk} dakika sürer` : "";
 }
 
 document.querySelector(".genel").addEventListener("input", () => {
@@ -442,7 +439,6 @@ $("#bloklar").addEventListener("input", e => {
   if(i === undefined || !k) return;
   const b = config.rotalar[+i];
   if(k === "varislar") b.varislar = t.value.split(",").map(x => x.trim().toUpperCase()).filter(Boolean);
-  else if(k === "bolge") b.bolge = t.value;
   else b.kalkis = t.value.trim().toUpperCase();
   ozetle();
 });
@@ -464,7 +460,6 @@ $("#btnEditor").addEventListener("click", async () => {
   if(e.classList.contains("acik")){ e.classList.remove("acik"); return; }
   try{
     if(!config) await configYukle();
-    if(!config.rotalar.length) config.rotalar.push(bosBlok());
     genelCiz();
     editorCiz();
     e.classList.add("acik");
@@ -477,8 +472,9 @@ $("#btnEditor").addEventListener("click", async () => {
 function dogrula(){
   if(!genel.bas || !genel.bit) return "Gidiş tarih aralığını doldurun.";
   if(new Date(genel.bit) < new Date(genel.bas)) return "Son tarih ilk tarihten önce olamaz.";
-  if(!config.rotalar.length) return "En az bir rota ekleyin.";
-  for(const [i, b] of config.rotalar.entries()){
+  const bu = config.rotalar.filter(b => (b.bolge || "Avrupa") === aktifSekme);
+  if(!bu.length) return `“${aktifSekme}” sekmesine en az bir rota ekleyin.`;
+  for(const [i, b] of bu.entries()){
     const n = i + 1;
     if(!/^[A-Z]{3}$/.test(b.kalkis||"")) return `${n}. rota: kalkış 3 harfli kod olmalı (ör. IST).`;
     if(!b.varislar?.length) return `${n}. rota: en az bir varış girin.`;
@@ -509,6 +505,7 @@ async function configKaydet(token){
   if(!mevcut.ok){ bildir("config.json okunamadı (HTTP " + mevcut.status + ")", "kotu"); return false; }
   const sha = (await mevcut.json()).sha;
 
+  // Tüm bölgelerin rotaları birlikte yazılır — diğer sekmeler kaybolmaz
   const yeni = { ayarlar: config.ayarlar, rotalar: config.rotalar.map(b => {
     const r = { kalkis: b.kalkis, varislar: b.varislar, bolge: b.bolge || "Avrupa", seyahatTipi: genel.tip,
                 tarihler: { baslangic: genel.bas, bitis: genel.bit, adimGun: genel.adim } };
@@ -518,7 +515,7 @@ async function configKaydet(token){
   })};
 
   const y = await fetch(url, { method:"PUT", headers:bas, body: JSON.stringify({
-    message: "Rotalar panodan güncellendi", content: b64(JSON.stringify(yeni, null, 2)),
+    message: `Rotalar panodan güncellendi (${aktifSekme})`, content: b64(JSON.stringify(yeni, null, 2)),
     sha, branch: "main" }) });
   if(!y.ok){
     bildir("Kaydedilemedi (HTTP " + y.status + ") — token'da Contents: Read and write izni var mı?", "kotu");
@@ -540,7 +537,7 @@ $("#btnKaydet").addEventListener("click", async () => {
   bildir("Rotalar kaydediliyor…", "bekle");
   try{
     if(await configKaydet(token)){
-      bildir("Rotalar kaydedildi — sorgu başlatılıyor…", "iyi");
+      bildir(`Rotalar kaydedildi — ${aktifSekme} sorgusu başlatılıyor…`, "iyi");
       $("#editor").classList.remove("acik");
       setTimeout(() => tetikle(token), 2000);
     }
@@ -561,7 +558,7 @@ async function tetikle(token){
     return;
   }
   $("#btnCalistir").disabled = true;
-  bildir("İş akışı tetikleniyor…", "bekle");
+  bildir(`${aktifSekme} sorgusu tetikleniyor…`, "bekle");
   try{
     const y = await fetch(
       `https://api.github.com/repos/${depo.owner}/${depo.repo}/actions/workflows/${IS_AKISI}/dispatches`,
@@ -569,7 +566,7 @@ async function tetikle(token){
         headers:{ "Authorization":"Bearer " + token,
                   "Accept":"application/vnd.github+json",
                   "X-GitHub-Api-Version":"2022-11-28" },
-        body: JSON.stringify({ ref:"main" }) });
+        body: JSON.stringify({ ref:"main", inputs: { bolge: aktifSekme } }) });
     if(y.status === 401 || y.status === 403){
       localStorage.removeItem("ghToken");
       $("#patKutu").classList.add("acik");
@@ -577,7 +574,7 @@ async function tetikle(token){
       throw new Error(y.status + " — token geçersiz veya izinsiz. Yeni token girin (Actions: Read and write).");
     }
     if(y.status !== 204) throw new Error("GitHub API " + y.status);
-    bildir("Sorgu başlatıldı — sonuçlar birkaç dakika içinde gelir, izleniyor…", "iyi");
+    bildir(`${aktifSekme} sorgusu başladı — sonuçlar birkaç dakika içinde gelir, izleniyor…`, "iyi");
     izle();
   }catch(e){
     bildir("Tetiklenemedi: " + e.message, "kotu");
@@ -622,6 +619,8 @@ $("#btnPatKaydet").addEventListener("click", () => {
   tetikle(t);
 });
 
+$("#btnCalistir").textContent = `${aktifSekme} sorgusunu çalıştır`;
+sekmeCiz();
 yukle();
 </script>
 </body>
