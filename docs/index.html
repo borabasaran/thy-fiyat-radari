@@ -63,6 +63,20 @@
   #mesaj{font-family:"IBM Plex Mono",monospace;font-size:.8rem;min-height:1.2em}
   #mesaj.iyi{color:var(--yesil)} #mesaj.kotu{color:var(--kirmizi)} #mesaj.bekle{color:var(--amber)}
 
+  /* ---------- bölge sekmeleri ---------- */
+  #sekmeler{display:flex;flex-wrap:wrap;gap:2px;margin:0 0 26px;border-bottom:1px solid var(--cizgi)}
+  #sekmeler button{
+    background:none;border:none;border-bottom:2px solid transparent;color:var(--metin-soluk);
+    padding:10px 18px;font-weight:700;font-size:.85rem;letter-spacing:.04em;cursor:pointer;
+    margin-bottom:-1px;
+  }
+  #sekmeler button:hover{color:var(--metin)}
+  #sekmeler button.aktif{color:var(--metin);border-bottom-color:var(--kirmizi)}
+  #sekmeler button .sayi{
+    font-family:"IBM Plex Mono",monospace;font-size:.7rem;color:var(--metin-soluk);margin-left:6px;
+  }
+  #sekmeler button.aktif .sayi{color:var(--amber)}
+
   /* ---------- fiyat panosu (imza öğe) ---------- */
   .rota-blok{margin-bottom:36px}
   .rota-baslik{
@@ -128,7 +142,7 @@
     border:1px solid var(--cizgi);border-radius:var(--radius);padding:14px;background:var(--pano);
     margin-bottom:6px}
   .genel.tekyon #gKonakAlan{display:none}
-  .satir{display:grid;gap:10px;align-items:end;grid-template-columns:110px 1fr auto;
+  .satir{display:grid;gap:10px;align-items:end;grid-template-columns:110px 1fr 140px auto;
     border:1px solid var(--cizgi);border-radius:var(--radius);padding:12px;margin-bottom:8px;
     background:var(--pano)}
   @media (max-width:560px){.satir{grid-template-columns:1fr}}
@@ -190,7 +204,8 @@
   </div>
 
   <h3 style="margin-top:22px">ROTALAR</h3>
-  <p class="ipucu">Her satır bir kalkış noktası ve istediğiniz kadar destinasyon. Virgülle ayırın.</p>
+  <p class="ipucu">Her satır bir kalkış noktası ve istediğiniz kadar destinasyon. Virgülle ayırın.
+  Bölge seçimi, sonuçların hangi sekmede görüneceğini belirler.</p>
   <div id="bloklar"></div>
   <div class="editor-alt">
     <button class="btn ikincil" id="btnBlokEkle">+ Rota ekle</button>
@@ -198,6 +213,8 @@
     <span id="ozet"></span>
   </div>
 </section>
+
+<nav id="sekmeler" aria-label="Bölgeler"></nav>
 
 <main id="icerik">
   <div class="bos">Veriler yükleniyor…</div>
@@ -249,20 +266,49 @@ async function yukle(sessiz=false){
   }
 }
 
+const BOLGELER = ["Avrupa", "Asya", "Amerika"];
+let aktifSekme = localStorage.getItem("aktifSekme") || "Tümü";
+let sonVeri = null;
+
+function sekmeCiz(){
+  const say = b => (sonVeri?.sonuclar || [])
+    .filter(h => b === "Tümü" ? true : (h.bolge || "Avrupa") === b).length;
+  const mevcut = ["Tümü", ...BOLGELER].filter(b => b === "Tümü" || say(b) > 0);
+  if(!mevcut.includes(aktifSekme)) aktifSekme = "Tümü";
+  $("#sekmeler").innerHTML = mevcut.map(b =>
+    `<button data-b="${b}" class="${b === aktifSekme ? "aktif" : ""}">${b}<span class="sayi">${say(b)}</span></button>`
+  ).join("");
+  $("#sekmeler").style.display = mevcut.length > 1 ? "flex" : "none";
+}
+
+$("#sekmeler").addEventListener("click", e => {
+  const b = e.target.closest("button")?.dataset.b;
+  if(!b) return;
+  aktifSekme = b;
+  localStorage.setItem("aktifSekme", b);
+  sekmeCiz();
+  ciz(sonVeri);
+});
+
 function ciz(veri){
+  sonVeri = veri;
   $("#zaman").textContent = new Date(veri.guncellemeZamani)
     .toLocaleString("tr-TR", {dateStyle:"medium", timeStyle:"short"});
   const ortam = $("#ortam");
   ortam.textContent = veri.ornekVeri ? "örnek veri" : "Google Flights · TK";
   ortam.className = "rozet " + (veri.ornekVeri ? "test" : "prod");
 
+  sekmeCiz();
   const gruplar = new Map();
   for(const h of veri.sonuclar || []){
+    if(aktifSekme !== "Tümü" && (h.bolge || "Avrupa") !== aktifSekme) continue;
     if(!gruplar.has(h.rota)) gruplar.set(h.rota, []);
     gruplar.get(h.rota).push(h);
   }
   if(!gruplar.size){
-    $("#icerik").innerHTML = `<div class="bos">Henüz sonuç yok. “Rotaları düzenle” ile rota ekleyip sorguyu başlatın.</div>`;
+    $("#icerik").innerHTML = `<div class="bos">${(veri.sonuclar||[]).length
+      ? `“${aktifSekme}” sekmesinde rota yok. “Rotaları düzenle” ile ekleyebilirsiniz.`
+      : "Henüz sonuç yok. “Rotaları düzenle” ile rota ekleyip sorguyu başlatın."}</div>`;
     return;
   }
 
@@ -306,7 +352,7 @@ function ciz(veri){
 let config = null;
 let genel = { tip:"R", bas:"", bit:"", adim:2, konak:7, aktarma:"" };
 
-const bosBlok = () => ({ kalkis:"IST", varislar:[] });
+const bosBlok = () => ({ kalkis:"IST", varislar:[], bolge:"Avrupa" });
 
 async function configYukle(){
   const y = await fetch("config.json?t=" + Date.now(), {cache:"no-store"});
@@ -316,7 +362,7 @@ async function configYukle(){
   // Mevcut config'ten rotaları ve genel ayarları çıkar
   for(const b of (ham.rotalar || [])){
     const varislar = b.varislar || (b.varis ? [b.varis] : []);
-    config.rotalar.push({ kalkis: b.kalkis || "IST", varislar });
+    config.rotalar.push({ kalkis: b.kalkis || "IST", varislar, bolge: b.bolge || "Avrupa" });
     const t = b.tarihler || {};
     const bas = t.baslangic || (t.liste ? t.liste.slice().sort()[0] : "");
     const bit = t.bitis || (t.liste ? t.liste.slice().sort().pop() : "");
@@ -357,6 +403,11 @@ function editorCiz(){
       <div class="alan"><label>Varış — virgülle çoklu</label>
         <input data-i="${i}" data-k="varislar" value="${(b.varislar||[]).join(", ")}"
           placeholder="BER, MUC, FRA, CGN"></div>
+      <div class="alan"><label>Bölge (sekme)</label>
+        <select data-i="${i}" data-k="bolge">
+          ${["Avrupa","Asya","Amerika"].map(x =>
+            `<option value="${x}"${(b.bolge||"Avrupa") === x ? " selected" : ""}>${x}</option>`).join("")}
+        </select></div>
       <button class="sil" data-sil="${i}">Sil</button>`;
     kap.appendChild(d);
   });
@@ -391,6 +442,7 @@ $("#bloklar").addEventListener("input", e => {
   if(i === undefined || !k) return;
   const b = config.rotalar[+i];
   if(k === "varislar") b.varislar = t.value.split(",").map(x => x.trim().toUpperCase()).filter(Boolean);
+  else if(k === "bolge") b.bolge = t.value;
   else b.kalkis = t.value.trim().toUpperCase();
   ozetle();
 });
@@ -458,7 +510,7 @@ async function configKaydet(token){
   const sha = (await mevcut.json()).sha;
 
   const yeni = { ayarlar: config.ayarlar, rotalar: config.rotalar.map(b => {
-    const r = { kalkis: b.kalkis, varislar: b.varislar, seyahatTipi: genel.tip,
+    const r = { kalkis: b.kalkis, varislar: b.varislar, bolge: b.bolge || "Avrupa", seyahatTipi: genel.tip,
                 tarihler: { baslangic: genel.bas, bitis: genel.bit, adimGun: genel.adim } };
     if(genel.tip === "R") r.konaklamaGun = genel.konak;
     if(genel.aktarma !== "") r.maxAktarma = +genel.aktarma;
