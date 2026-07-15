@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>THY Fiyat Radarı — Geçmiş</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --pano:#0d1521; --pano-acik:#16202f; --cizgi:#243144;
+    --metin:#e8edf4; --metin-soluk:#8b98ab;
+    --kirmizi:#e5233d; --amber:#ffb547; --yesil:#3ecf8e;
+    --radius:10px; font-size:16px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--pano);color:var(--metin);font-family:"Archivo",system-ui,sans-serif;
+    min-height:100vh;padding:0 clamp(16px,4vw,56px) 64px}
+  header{display:flex;flex-wrap:wrap;gap:16px;align-items:baseline;justify-content:space-between;
+    padding:28px 0 20px;border-bottom:2px solid var(--kirmizi)}
+  h1{font-weight:800;font-size:clamp(1.4rem,3vw,2rem);letter-spacing:.02em}
+  h1 .nokta{color:var(--kirmizi)}
+  a.geri{color:var(--metin-soluk);text-decoration:none;font-family:"IBM Plex Mono",monospace;
+    font-size:.8rem;border:1px solid var(--cizgi);border-radius:99px;padding:6px 14px}
+  a.geri:hover{color:var(--metin);border-color:var(--metin-soluk)}
+
+  .kontrol{display:flex;flex-wrap:wrap;gap:12px;align-items:end;margin:24px 0 28px}
+  .alan{display:flex;flex-direction:column;gap:4px}
+  .alan label{font-size:.68rem;color:var(--metin-soluk);letter-spacing:.06em;text-transform:uppercase}
+  select,input{background:var(--pano-acik);border:1px solid var(--cizgi);border-radius:8px;
+    color:var(--metin);padding:8px 10px;font-size:.85rem;font-family:"IBM Plex Mono",monospace}
+  select:focus,input:focus{outline:2px solid var(--amber);outline-offset:1px}
+
+  /* özet kartlar */
+  .ozet{display:grid;gap:8px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));margin-bottom:28px}
+  .kart{background:var(--pano-acik);border:1px solid var(--cizgi);border-radius:var(--radius);padding:14px}
+  .kart .etiket{font-size:.66rem;color:var(--metin-soluk);letter-spacing:.08em;text-transform:uppercase;
+    margin-bottom:6px}
+  .kart .deger{font-family:"IBM Plex Mono",monospace;font-weight:600;font-size:1.25rem;
+    font-variant-numeric:tabular-nums}
+  .kart .alt{font-size:.7rem;color:var(--metin-soluk);margin-top:4px}
+  .kart .deger.yesil{color:var(--yesil)} .kart .deger.kirmizi{color:var(--kirmizi)}
+
+  /* grafik */
+  .grafik-kutu{background:var(--pano-acik);border:1px solid var(--cizgi);border-radius:var(--radius);
+    padding:18px;margin-bottom:28px}
+  .grafik-kutu h2{font-size:.85rem;letter-spacing:.06em;color:var(--metin-soluk);
+    text-transform:uppercase;margin-bottom:14px}
+  svg{width:100%;height:auto;display:block;overflow:visible}
+  .ekseny{font-family:"IBM Plex Mono",monospace;font-size:9px;fill:var(--metin-soluk)}
+  .cizgi{fill:none;stroke:var(--amber);stroke-width:2}
+  .alan-dolgu{fill:var(--amber);opacity:.08}
+  .nokta{fill:var(--pano);stroke:var(--amber);stroke-width:1.5}
+  .nokta.dip{fill:var(--yesil);stroke:var(--yesil)}
+  .izgara{stroke:var(--cizgi);stroke-width:1;stroke-dasharray:3 4}
+
+  /* tablo */
+  table{width:100%;border-collapse:collapse;font-size:.82rem}
+  th{text-align:left;font-size:.66rem;letter-spacing:.08em;text-transform:uppercase;
+    color:var(--metin-soluk);padding:8px 10px;border-bottom:1px solid var(--cizgi);font-weight:700}
+  td{padding:9px 10px;border-bottom:1px solid var(--cizgi);font-family:"IBM Plex Mono",monospace;
+    font-variant-numeric:tabular-nums}
+  tr:hover td{background:var(--pano-acik)}
+  td.fiyat{font-weight:600}
+  td .fark{font-size:.7rem;margin-left:8px}
+  .yesil{color:var(--yesil)} .kirmizi{color:var(--kirmizi)} .soluk{color:var(--metin-soluk)}
+  .bos{border:1px dashed var(--cizgi);border-radius:var(--radius);padding:40px;text-align:center;
+    color:var(--metin-soluk);line-height:1.7}
+  footer{margin-top:44px;font-size:.72rem;color:var(--metin-soluk);line-height:1.6;
+    border-top:1px solid var(--cizgi);padding-top:16px}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>FİYAT GEÇMİŞİ<span class="nokta">.</span></h1>
+  <a class="geri" href="./">← panoya dön</a>
+</header>
+
+<div class="kontrol">
+  <div class="alan"><label>Rota</label>
+    <select id="fRota"><option>yükleniyor…</option></select></div>
+  <div class="alan"><label>Gidiş tarihi</label>
+    <select id="fTarih"><option value="">tümü (rotanın en ucuzu)</option></select></div>
+  <div class="alan"><label>Son</label>
+    <select id="fPencere">
+      <option value="0">tüm zamanlar</option>
+      <option value="7">7 gün</option>
+      <option value="30" selected>30 gün</option>
+      <option value="90">90 gün</option>
+    </select></div>
+</div>
+
+<div class="ozet" id="ozet"></div>
+
+<div class="grafik-kutu" id="grafikKutu">
+  <h2 id="grafikBaslik">Fiyat seyri</h2>
+  <div id="grafik"></div>
+</div>
+
+<div id="tabloKutu"></div>
+
+<footer>
+  Her sorgu çalıştığında o anki en düşük TK fiyatı kaydedilir; grafik yalnız gerçekten sorgulanan
+  anları gösterir. Geçmiş biriktikçe anlamlanır — ilk günlerde grafik seyrek görünür.
+  Veri kaynağı: docs/data/history.jsonl
+</footer>
+
+<script>
+"use strict";
+const $ = s => document.querySelector(s);
+const trPara = n => n.toLocaleString("tr-TR", {maximumFractionDigits:0});
+const trTarih = iso => new Date(iso).toLocaleDateString("tr-TR", {day:"2-digit", month:"short"});
+const trSaat = iso => new Date(iso).toLocaleString("tr-TR", {day:"2-digit", month:"short", hour:"2-digit", minute:"2-digit"});
+
+let kayitlar = [];
+
+async function yukle(){
+  try{
+    const y = await fetch("data/history.jsonl?t=" + Date.now(), {cache:"no-store"});
+    if(!y.ok) throw new Error("HTTP " + y.status);
+    const metin = await y.text();
+    kayitlar = metin.trim().split("\n").filter(Boolean).map(x => {
+      try { return JSON.parse(x); } catch { return null; }
+    }).filter(Boolean);
+  }catch(e){
+    kayitlar = [];
+  }
+  if(!kayitlar.length){
+    document.querySelector(".kontrol").style.display = "none";
+    $("#grafikKutu").style.display = "none";
+    $("#tabloKutu").innerHTML = `<div class="bos">Henüz geçmiş kaydı yok.<br>
+      Panodan bir sorgu çalıştırın; her sorgu buraya bir ölçüm ekler.<br>
+      Karşılaştırma için en az iki ölçüm gerekir.</div>`;
+    return;
+  }
+  rotaDoldur();
+  ciz();
+}
+
+function rotaDoldur(){
+  const rotalar = [...new Set(kayitlar.map(k => k.rota))].sort();
+  $("#fRota").innerHTML = rotalar.map(r => `<option value="${r}">${r}</option>`).join("");
+  tarihDoldur();
+}
+
+function tarihDoldur(){
+  const rota = $("#fRota").value;
+  const tarihler = [...new Set(kayitlar.filter(k => k.rota === rota).map(k => k.gidisTarihi))].sort();
+  $("#fTarih").innerHTML = `<option value="">tümü (rotanın en ucuzu)</option>` +
+    tarihler.map(t => `<option value="${t}">${trTarih(t + "T00:00:00")}</option>`).join("");
+}
+
+function seri(){
+  const rota = $("#fRota").value, tarih = $("#fTarih").value, gun = +$("#fPencere").value;
+  const sinir = gun ? Date.now() - gun * 86400000 : 0;
+  const secili = kayitlar.filter(k => k.rota === rota && (!tarih || k.gidisTarihi === tarih)
+    && new Date(k.olcum).getTime() >= sinir);
+  // Aynı ölçüm anındaki birden çok gidiş tarihi varsa en ucuzunu al
+  const gruplu = new Map();
+  for(const k of secili){
+    const v = gruplu.get(k.olcum);
+    if(!v || k.tutar < v.tutar) gruplu.set(k.olcum, k);
+  }
+  return [...gruplu.values()].sort((a,b) => new Date(a.olcum) - new Date(b.olcum));
+}
+
+function ozetCiz(s){
+  if(!s.length){ $("#ozet").innerHTML = ""; return; }
+  const tutarlar = s.map(x => x.tutar);
+  const min = Math.min(...tutarlar), max = Math.max(...tutarlar);
+  const ort = tutarlar.reduce((a,b) => a+b, 0) / tutarlar.length;
+  const son = s[s.length-1], ilk = s[0];
+  const fark = s.length > 1 ? ((son.tutar - ilk.tutar) / ilk.tutar) * 100 : 0;
+  const pb = son.paraBirimi;
+  const dipKayit = s.find(x => x.tutar === min);
+  const sinif = son.tutar <= min * 1.02 ? "yesil" : (son.tutar >= max * .98 ? "kirmizi" : "");
+
+  $("#ozet").innerHTML = `
+    <div class="kart"><div class="etiket">Son ölçüm</div>
+      <div class="deger ${sinif}">${trPara(son.tutar)}<span style="font-size:.6em"> ${pb}</span></div>
+      <div class="alt">${trSaat(son.olcum)}</div></div>
+    <div class="kart"><div class="etiket">En düşük</div>
+      <div class="deger yesil">${trPara(min)}</div>
+      <div class="alt">${trSaat(dipKayit.olcum)}</div></div>
+    <div class="kart"><div class="etiket">Ortalama</div>
+      <div class="deger">${trPara(ort)}</div>
+      <div class="alt">${s.length} ölçüm</div></div>
+    <div class="kart"><div class="etiket">En yüksek</div>
+      <div class="deger">${trPara(max)}</div>
+      <div class="alt">fark: ${trPara(max - min)} ${pb}</div></div>
+    <div class="kart"><div class="etiket">İlk ölçümden bu yana</div>
+      <div class="deger ${fark < 0 ? "yesil" : fark > 0 ? "kirmizi" : ""}">${fark > 0 ? "+" : ""}${fark.toFixed(1)}%</div>
+      <div class="alt">${s.length > 1 ? trSaat(ilk.olcum) + "’den beri" : "karşılaştırma için 2. ölçüm gerekli"}</div></div>`;
+}
+
+function grafikCiz(s){
+  const G = $("#grafik");
+  if(s.length < 2){
+    G.innerHTML = `<div class="bos">Grafik için en az iki ölçüm gerekiyor — şu an ${s.length} tane var.<br>
+      Sorguyu tekrar çalıştırdıkça seyir burada oluşacak.</div>`;
+    return;
+  }
+  const W = 900, H = 260, ml = 52, mr = 16, mt = 14, mb = 30;
+  const tutarlar = s.map(x => x.tutar);
+  let min = Math.min(...tutarlar), max = Math.max(...tutarlar);
+  const pay = (max - min) * .15 || max * .05;
+  min -= pay; max += pay;
+  const t = s.map(x => new Date(x.olcum).getTime());
+  const t0 = Math.min(...t), t1 = Math.max(...t);
+  const X = v => ml + ((v - t0) / ((t1 - t0) || 1)) * (W - ml - mr);
+  const Y = v => mt + (1 - (v - min) / ((max - min) || 1)) * (H - mt - mb);
+
+  const nokta = s.map(x => `${X(new Date(x.olcum).getTime())},${Y(x.tutar)}`);
+  const cizgi = "M" + nokta.join(" L");
+  const dolgu = `${cizgi} L${X(t1)},${H-mb} L${X(t0)},${H-mb} Z`;
+  const enDusuk = Math.min(...tutarlar);
+
+  const yEtiket = [0, .25, .5, .75, 1].map(o => {
+    const v = min + o * (max - min);
+    return `<line class="izgara" x1="${ml}" y1="${Y(v)}" x2="${W-mr}" y2="${Y(v)}"/>
+            <text class="ekseny" x="${ml-8}" y="${Y(v)+3}" text-anchor="end">${trPara(v)}</text>`;
+  }).join("");
+
+  const xEtiket = [s[0], s[Math.floor(s.length/2)], s[s.length-1]].map(x =>
+    `<text class="ekseny" x="${X(new Date(x.olcum).getTime())}" y="${H-mb+16}" text-anchor="middle">
+       ${trTarih(x.olcum)}</text>`).join("");
+
+  G.innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Fiyat seyri grafiği">
+    ${yEtiket}${xEtiket}
+    <path class="alan-dolgu" d="${dolgu}"/>
+    <path class="cizgi" d="${cizgi}"/>
+    ${s.map(x => `<circle class="nokta${x.tutar === enDusuk ? " dip" : ""}"
+        cx="${X(new Date(x.olcum).getTime())}" cy="${Y(x.tutar)}" r="${x.tutar === enDusuk ? 4.5 : 3}">
+        <title>${trSaat(x.olcum)} — ${trPara(x.tutar)} ${x.paraBirimi}${x.tutar === enDusuk ? " (en düşük)" : ""}</title>
+      </circle>`).join("")}
+  </svg>`;
+}
+
+function tabloCiz(s){
+  if(!s.length){ $("#tabloKutu").innerHTML = ""; return; }
+  const ters = [...s].reverse();
+  const enDusuk = Math.min(...s.map(x => x.tutar));
+  $("#tabloKutu").innerHTML = `<table>
+    <thead><tr><th>Sorgu zamanı</th><th>Gidiş${ters[0].donusTarihi ? " → Dönüş" : ""}</th>
+      <th>Fiyat</th><th>Bir öncekine göre</th></tr></thead>
+    <tbody>${ters.map((x, i) => {
+      const onceki = ters[i+1];
+      const fark = onceki ? x.tutar - onceki.tutar : null;
+      const yuzde = onceki ? (fark / onceki.tutar) * 100 : null;
+      return `<tr>
+        <td class="soluk">${trSaat(x.olcum)}</td>
+        <td class="soluk">${trTarih(x.gidisTarihi + "T00:00:00")}${x.donusTarihi
+            ? " → " + trTarih(x.donusTarihi + "T00:00:00") : ""}</td>
+        <td class="fiyat ${x.tutar === enDusuk ? "yesil" : ""}">${trPara(x.tutar)} ${x.paraBirimi}
+          ${x.tutar === enDusuk ? '<span class="fark yesil">en düşük</span>' : ""}</td>
+        <td>${fark === null ? '<span class="soluk">—</span>'
+          : fark === 0 ? '<span class="soluk">değişmedi</span>'
+          : `<span class="${fark < 0 ? "yesil" : "kirmizi"}">${fark > 0 ? "+" : ""}${trPara(fark)}
+             (${yuzde > 0 ? "+" : ""}${yuzde.toFixed(1)}%)</span>`}</td>
+      </tr>`;
+    }).join("")}</tbody></table>`;
+}
+
+function ciz(){
+  const s = seri();
+  $("#grafikBaslik").textContent = `${$("#fRota").value} — fiyat seyri`
+    + ($("#fTarih").value ? ` (${trTarih($("#fTarih").value + "T00:00:00")} gidişli)` : " (en ucuz gidiş)");
+  ozetCiz(s);
+  grafikCiz(s);
+  tabloCiz(s);
+}
+
+$("#fRota").addEventListener("change", () => { tarihDoldur(); ciz(); });
+$("#fTarih").addEventListener("change", ciz);
+$("#fPencere").addEventListener("change", ciz);
+
+yukle();
+</script>
+</body>
+</html>
