@@ -2,33 +2,96 @@
   "ayarlar": {
     "yolcuSayisi": 1,
     "paraBirimiTercihi": "TRY",
-    "havayolular": ["TK"],
+    "havayolular": [
+      "TK"
+    ],
     "kabin": "economy",
     "istekArasiBeklemeSn": 3
   },
   "rotalar": [
     {
-      "ad": "İstanbul → Berlin",
       "kalkis": "IST",
-      "varis": "BER",
-      "seyahatTipi": "O",
-      "tarihler": { "baslangic": "2026-08-01", "bitis": "2026-08-15", "adimGun": 2 }
-    },
-    {
-      "ad": "İstanbul → Münih (gidiş-dönüş, 7 gece)",
-      "kalkis": "IST",
-      "varis": "MUC",
+      "varislar": [
+        "BER"
+      ],
       "seyahatTipi": "R",
+      "tarihler": {
+        "baslangic": "2026-08-01",
+        "bitis": "2026-08-15",
+        "adimGun": 6
+      },
       "konaklamaGun": 7,
-      "tarihler": { "baslangic": "2026-09-01", "bitis": "2026-09-10", "adimGun": 3 }
+      "maxAktarma": 0
     },
     {
-      "ad": "Ankara → Köln (aktarmasız)",
+      "kalkis": "IST",
+      "varislar": [
+        "MUC"
+      ],
+      "seyahatTipi": "R",
+      "tarihler": {
+        "baslangic": "2026-08-01",
+        "bitis": "2026-08-15",
+        "adimGun": 6
+      },
+      "konaklamaGun": 7,
+      "maxAktarma": 0
+    },
+    {
+      "kalkis": "IST",
+      "varislar": [
+        "FRA"
+      ],
+      "seyahatTipi": "R",
+      "tarihler": {
+        "baslangic": "2026-08-01",
+        "bitis": "2026-08-15",
+        "adimGun": 6
+      },
+      "konaklamaGun": 7,
+      "maxAktarma": 0
+    },
+    {
       "kalkis": "ESB",
-      "varis": "CGN",
-      "seyahatTipi": "O",
-      "maxAktarma": 0,
-      "tarihler": { "liste": ["2026-08-05", "2026-08-12", "2026-08-19"] }
+      "varislar": [
+        "VIE"
+      ],
+      "seyahatTipi": "R",
+      "tarihler": {
+        "baslangic": "2026-08-01",
+        "bitis": "2026-08-15",
+        "adimGun": 6
+      },
+      "konaklamaGun": 7,
+      "maxAktarma": 0
+    },
+    {
+      "kalkis": "ESB",
+      "varislar": [
+        "MUC"
+      ],
+      "seyahatTipi": "R",
+      "tarihler": {
+        "baslangic": "2026-08-01",
+        "bitis": "2026-08-15",
+        "adimGun": 6
+      },
+      "konaklamaGun": 7,
+      "maxAktarma": 0
+    },
+    {
+      "kalkis": "ESB",
+      "varislar": [
+        "FRA"
+      ],
+      "seyahatTipi": "R",
+      "tarihler": {
+        "baslangic": "2026-08-01",
+        "bitis": "2026-08-15",
+        "adimGun": 6
+      },
+      "konaklamaGun": 7,
+      "maxAktarma": 0
     }
   ]
 }
