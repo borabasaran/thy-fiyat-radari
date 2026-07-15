@@ -4,8 +4,9 @@ THY Fiyat Radarı — veri toplama betiği (API anahtarı GEREKTİRMEZ)
 =================================================================
 docs/config.json içindeki rota × tarih kombinasyonlarını Google Flights
 üzerinden (fast-flights kütüphanesi, anahtarsız) sorgular, sonuçları
-Turkish Airlines uçuşlarına filtreler ve en düşük fiyatları
-docs/data/results.json dosyasına yazar.
+Turkish Airlines uçuşlarına filtreler ve en düşük fiyatları iki dosyaya yazar:
+  docs/data/results.json  — panonun gösterdiği son durum (üzerine yazılır)
+  docs/data/history.jsonl — her ölçümün kalıcı kaydı (eklenir, silinmez)
 
 Opsiyonel ortam değişkenleri:
   BOLGE    : yalnız o bölgeyi sorgular (Avrupa/Asya/Amerika); boş veya
@@ -44,6 +45,7 @@ from fast_flights.exceptions import FlightsNotFound
 ROOT = Path(__file__).resolve().parent.parent
 CONFIG_PATH = ROOT / "docs" / "config.json"
 OUTPUT_PATH = ROOT / "docs" / "data" / "results.json"
+HISTORY_PATH = ROOT / "docs" / "data" / "history.jsonl"   # her sorgunun kalıcı kaydı
 PROXY = os.environ.get("FF_PROXY") or None
 # Yalnız tek bir bölgeyi sorgulamak için: BOLGE=Asya (boş/hepsi = tümü)
 BOLGE = (os.environ.get("BOLGE") or "").strip()
@@ -213,6 +215,30 @@ def main() -> int:
     }
     OUTPUT_PATH.parent.mkdir(parents=True, exist_ok=True)
     OUTPUT_PATH.write_text(json.dumps(cikti, ensure_ascii=False, indent=2), encoding="utf-8")
+
+    # Geçmiş: yalnız bu çalıştırmada gerçekten sorgulanan fiyatlı hücreler eklenir
+    # (satır başına bir JSON — dosya büyüse de tek satır okunur, git diff'i temiz kalır)
+    olcum_zamani = cikti["guncellemeZamani"]
+    satirlar = []
+    for h in hucreler[len(hucreler) - yeni_sayisi:] if yeni_sayisi else []:
+        if h.get("durum") != "ok":
+            continue
+        satirlar.append(json.dumps({
+            "olcum": olcum_zamani,                 # sorgunun yapıldığı an
+            "rota": h["rota"],
+            "kalkis": h["kalkis"],
+            "varis": h["varis"],
+            "bolge": h.get("bolge", "Avrupa"),
+            "gidisTarihi": h["gidisTarihi"],
+            "donusTarihi": h.get("donusTarihi"),
+            "tutar": h["tutar"],
+            "paraBirimi": h["paraBirimi"],
+        }, ensure_ascii=False))
+    if satirlar:
+        with HISTORY_PATH.open("a", encoding="utf-8") as f:
+            f.write("\n".join(satirlar) + "\n")
+        print(f"{len(satirlar)} ölçüm geçmişe eklendi → {HISTORY_PATH}")
+
     print(f"\n{len(hucreler)} hücre yazıldı → {OUTPUT_PATH} (yeni: {yeni_sayisi}, hata: {hata_sayisi})")
     if yeni_sayisi and hata_sayisi == yeni_sayisi:
         # Sonuç dosyası (hata ayrıntılarıyla) yine de commit'lensin diye
