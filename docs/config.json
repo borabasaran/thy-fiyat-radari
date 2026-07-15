@@ -10,7 +10,7 @@
   },
   "rotalar": [
     {
-      "kalkis": "IST",
+      "kalkis": "SAW",
       "varislar": [
         "BER"
       ],
@@ -24,7 +24,7 @@
       "maxAktarma": 0
     },
     {
-      "kalkis": "IST",
+      "kalkis": "SAW",
       "varislar": [
         "MUC"
       ],
@@ -38,7 +38,7 @@
       "maxAktarma": 0
     },
     {
-      "kalkis": "IST",
+      "kalkis": "SAW",
       "varislar": [
         "FRA"
       ],
@@ -52,7 +52,7 @@
       "maxAktarma": 0
     },
     {
-      "kalkis": "ESB",
+      "kalkis": "SAW",
       "varislar": [
         "VIE"
       ],
@@ -66,9 +66,9 @@
       "maxAktarma": 0
     },
     {
-      "kalkis": "ESB",
+      "kalkis": "IST",
       "varislar": [
-        "MUC"
+        "SHA"
       ],
       "seyahatTipi": "R",
       "tarihler": {
@@ -80,9 +80,107 @@
       "maxAktarma": 0
     },
     {
-      "kalkis": "ESB",
+      "kalkis": "IST",
       "varislar": [
-        "FRA"
+        "CKG"
+      ],
+      "seyahatTipi": "R",
+      "tarihler": {
+        "baslangic": "2026-08-01",
+        "bitis": "2026-08-15",
+        "adimGun": 6
+      },
+      "konaklamaGun": 7,
+      "maxAktarma": 0
+    },
+    {
+      "kalkis": "IST",
+      "varislar": [
+        "PEK"
+      ],
+      "seyahatTipi": "R",
+      "tarihler": {
+        "baslangic": "2026-08-01",
+        "bitis": "2026-08-15",
+        "adimGun": 6
+      },
+      "konaklamaGun": 7,
+      "maxAktarma": 0
+    },
+    {
+      "kalkis": "IST",
+      "varislar": [
+        "CAN"
+      ],
+      "seyahatTipi": "R",
+      "tarihler": {
+        "baslangic": "2026-08-01",
+        "bitis": "2026-08-15",
+        "adimGun": 6
+      },
+      "konaklamaGun": 7,
+      "maxAktarma": 0
+    },
+    {
+      "kalkis": "IST",
+      "varislar": [
+        "NRT"
+      ],
+      "seyahatTipi": "R",
+      "tarihler": {
+        "baslangic": "2026-08-01",
+        "bitis": "2026-08-15",
+        "adimGun": 6
+      },
+      "konaklamaGun": 7,
+      "maxAktarma": 0
+    },
+    {
+      "kalkis": "IST",
+      "varislar": [
+        "HND"
+      ],
+      "seyahatTipi": "R",
+      "tarihler": {
+        "baslangic": "2026-08-01",
+        "bitis": "2026-08-15",
+        "adimGun": 6
+      },
+      "konaklamaGun": 7,
+      "maxAktarma": 0
+    },
+    {
+      "kalkis": "IST",
+      "varislar": [
+        "KIX"
+      ],
+      "seyahatTipi": "R",
+      "tarihler": {
+        "baslangic": "2026-08-01",
+        "bitis": "2026-08-15",
+        "adimGun": 6
+      },
+      "konaklamaGun": 7,
+      "maxAktarma": 0
+    },
+    {
+      "kalkis": "IST",
+      "varislar": [
+        "ICN"
+      ],
+      "seyahatTipi": "R",
+      "tarihler": {
+        "baslangic": "2026-08-01",
+        "bitis": "2026-08-15",
+        "adimGun": 6
+      },
+      "konaklamaGun": 7,
+      "maxAktarma": 0
+    },
+    {
+      "kalkis": "IST",
+      "varislar": [
+        "MIA"
       ],
       "seyahatTipi": "R",
       "tarihler": {
