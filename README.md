@@ -1,77 +1,64 @@
 # THY Fiyat Radarı ✈
 
-Önceden belirlediğiniz **birden çok destinasyonu ve tarih aralığını** tek seferde sorgulayıp
-tüm en düşük **Turkish Airlines** fiyatlarını **tek ekranda, ısı haritalı bir pano** olarak
-gösteren, tamamen GitHub üzerinde çalışan (sunucu ve **API anahtarı gerektirmeyen**) bir araçtır.
+Birden çok destinasyonu ve tarih aralığını Google Flights üzerinden sorgular, yalnızca Turkish Airlines (`TK`) sonuçlarını gösterir ve en düşük fiyatları GitHub Pages panosunda sunar.
 
-> **Veri kaynağı:** thy.com.tr bot koruması (Akamai) nedeniyle doğrudan taranamaz; THY'nin
-> geliştirici API'si ise yalnızca kurumsal hesaplara açıktır. Bu yüzden fiyatlar, anahtarsız
-> sorgulanabilen **Google Flights** verisinden alınır ve **yalnızca TK uçuşlarına filtrelenir**
-> ([fast-flights](https://github.com/AWeirdDev/flights) kütüphanesi). Fiyatlar THY sitesindekiyle
-> pratikte aynıdır; hücreye tıklayınca satın alma için aynı arama turkishairlines.com'da açılır.
+## Neler var?
 
-## Mimari
+- Avrupa, Asya ve Amerika için ayrı sekmeler
+- IATA kodlarının yanında şehir adları
+- Mobil telefonlara uyumlu arayüz
+- Sorgu sırasında canlı işlem göstergesi
+- Bölge bazlı son güncelleme zamanı
+- Başarılı, bulunamayan ve teknik hatalı sorgular için özet
+- Kalıcı fiyat geçmişi (`docs/data/history.jsonl`)
 
+## Çalışma biçimi
+
+```text
+docs/config.json
+      ↓
+GitHub Actions → scripts/fetch_prices.py
+      ↓
+docs/data/results.json + docs/data/history.jsonl
+      ↓
+GitHub Pages
 ```
-config.json  ──▶  GitHub Actions (tek tık / günlük cron)
-                      │  scripts/fetch_prices.py → Google Flights (TK filtreli)
-                      ▼
-              docs/data/results.json  ──▶  GitHub Pages panosu (docs/index.html)
-```
 
-## Rota ve tarihleri belirleme
+## Sorgu başlatma
 
-`docs/config.json` dosyasını düzenleyin — commit ettiğiniz anda sorgu otomatik yeniden çalışır:
+Panoda **Sorguyu çalıştır** düğmesine basın. İlk kullanımda yalnızca bu depoya erişen fine-grained bir GitHub token gerekir:
 
-```jsonc
+- Contents: Read and write
+- Actions: Read and write
+
+Token yalnızca kullandığınız tarayıcının yerel saklama alanında tutulur.
+
+Alternatif olarak GitHub → Actions → **THY fiyatlarını güncelle** → **Run workflow** yolunu kullanabilirsiniz.
+
+İş akışı her gün Türkiye saatiyle yaklaşık 08.00'de otomatik çalışır.
+
+## Rotaları düzenleme
+
+Panodaki **Rotaları düzenle** düğmesiyle tarih aralığını, yolcu sayısını, kalkış ve varış kodlarını ve rota başına aktarma sınırını değiştirebilirsiniz.
+
+Geçerli örnek:
+
+```json
 {
-  "ayarlar": {
-    "yolcuSayisi": 1,
-    "paraBirimiTercihi": "TRY",   // EUR, USD... da olabilir
-    "havayolular": ["TK"],        // boş liste = tüm havayolları
-    "kabin": "economy",           // premium-economy | business | first
-    "istekArasiBeklemeSn": 3      // Google'a nazik davranmak için
+  "kalkis": "IST",
+  "varislar": ["BER", "MUC", "FRA"],
+  "bolge": "Avrupa",
+  "seyahatTipi": "R",
+  "tarihler": {
+    "baslangic": "2026-08-17",
+    "bitis": "2026-08-24",
+    "adimGun": 2
   },
-  "rotalar": [
-    { // tarih ARALIĞI ile (2 günde bir örneklenir)
-      "ad": "İstanbul → Berlin",
-      "kalkis": "IST", "varis": "BER",
-      "seyahatTipi": "O",         // O = tek yön, R = gidiş-dönüş
-      "tarihler": { "baslangic": "2026-08-01", "bitis": "2026-08-15", "adimGun": 2 }
-    },
-    { // gidiş-dönüş: dönüş = gidiş + konaklamaGun
-      "ad": "İstanbul → Münih",
-      "kalkis": "IST", "varis": "MUC",
-      "seyahatTipi": "R", "konaklamaGun": 7,
-      "tarihler": { "baslangic": "2026-09-01", "bitis": "2026-09-10", "adimGun": 3 }
-    },
-    { // tek tek TARİH LİSTESİ + yalnız aktarmasız uçuşlar
-      "ad": "Ankara → Köln (aktarmasız)",
-      "kalkis": "ESB", "varis": "CGN",
-      "seyahatTipi": "O", "maxAktarma": 0,
-      "tarihler": { "liste": ["2026-08-05", "2026-08-12", "2026-08-19"] }
-    }
-  ]
+  "konaklamaGun": 7,
+  "maxAktarma": 0
 }
 ```
 
-## "Tek tıkla" sorgulama — iki yol
+## Veri kaynağı ve sınırlamalar
 
-1. **Panodaki buton:** *"Sorguyu şimdi çalıştır"* butonu GitHub API üzerinden iş akışını
-   tetikler. İlk kullanımda bir **fine-grained personal access token** ister (GitHub →
-   *Settings → Developer settings → Fine-grained tokens*; yalnızca bu depoya,
-   **Actions: Read and write** izniyle). Token sadece kendi tarayıcınızda saklanır.
-2. **Actions sekmesi:** Depo → *Actions* → "THY fiyatlarını güncelle" → *Run workflow*.
-
-İş akışı ayrıca her gün 08:00'de (TR) otomatik çalışır; `cron` satırını
-`.github/workflows/fiyat-guncelle.yml` içinde değiştirebilirsiniz.
-
-## Bilinmesi gerekenler
-
-- Bu, Google Flights'ın **resmî olmayan** bir kullanımıdır: Google sayfa yapısını değiştirirse
-  kütüphane güncellenene kadar sorgular hata verebilir (`pip install -U fast-flights` genelde
-  yeterli olur). Hatalı hücreler panoda işaretlenir; ayrıntı fare üzerine gelince görünür.
-- GitHub Actions IP'leri nadiren Google tarafından sınırlanabilir; betik her hücre için
-  3 deneme yapar. Kalıcı olursa depoya `FF_PROXY` secret'ı ekleyip bir proxy tanımlayabilirsiniz.
-- Çok sayıda rota × tarih tanımlarsanız sorgu süresi uzar (hücre başına ~5-10 sn).
-- Fiyatlar bilgilendirme amaçlıdır; rezervasyon anındaki fiyat farklılık gösterebilir.
+THY sitesi bot koruması nedeniyle doğrudan taranmaz. Fiyatlar `fast-flights` aracılığıyla Google Flights verisinden alınır ve TK uçuşlarıyla sınırlandırılır. Bu resmî bir THY API entegrasyonu değildir; Google sayfa yapısı değişirse geçici sorgu sorunları yaşanabilir. Fiyatlar bilgilendirme amaçlıdır ve rezervasyon anında farklılaşabilir.
