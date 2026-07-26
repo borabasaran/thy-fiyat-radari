@@ -1,21 +1,7 @@
 #!/usr/bin/env python3
-"""
-THY Fiyat Radarı — veri toplama betiği (API anahtarı GEREKTİRMEZ)
-=================================================================
-docs/config.json içindeki rota × tarih kombinasyonlarını Google Flights
-üzerinden (fast-flights kütüphanesi, anahtarsız) sorgular, sonuçları
-Turkish Airlines uçuşlarına filtreler ve en düşük fiyatları iki dosyaya yazar:
-  docs/data/results.json  — panonun gösterdiği son durum (üzerine yazılır)
-  docs/data/history.jsonl — her ölçümün kalıcı kaydı (eklenir, silinmez)
+"""THY Fiyat Radarı veri toplama betiği."""
 
-Opsiyonel ortam değişkenleri:
-  BOLGE    : yalnız o bölgeyi sorgular (Avrupa/Asya/Amerika); boş veya
-             "hepsi" ise tüm rotalar taranır. Tek bölge sorgulandığında
-             diğer bölgelerin önceki sonuçları korunur.
-  FF_PROXY : Google engellerse kullanılacak proxy adresi (http://...)
-
-Kurulum: pip install fast-flights
-"""
+from __future__ import annotations
 
 import datetime as dt
 import json
@@ -24,11 +10,10 @@ import subprocess
 import sys
 import time
 from pathlib import Path
+from typing import Any, Iterable
 
 
-def _bagimliliklari_garanti_et():
-    """fast-flights 3.0.2, typing_extensions bağımlılığını beyan etmiyor
-    (paketleme hatası); eksikse çalışma anında kur."""
+def _bagimliliklari_garanti_et() -> None:
     try:
         import typing_extensions  # noqa: F401
     except ModuleNotFoundError:
@@ -45,72 +30,119 @@ from fast_flights.exceptions import FlightsNotFound
 ROOT = Path(__file__).resolve().parent.parent
 CONFIG_PATH = ROOT / "docs" / "config.json"
 OUTPUT_PATH = ROOT / "docs" / "data" / "results.json"
-HISTORY_PATH = ROOT / "docs" / "data" / "history.jsonl"   # her sorgunun kalıcı kaydı
+HISTORY_PATH = ROOT / "docs" / "data" / "history.jsonl"
 PROXY = os.environ.get("FF_PROXY") or None
-# Yalnız tek bir bölgeyi sorgulamak için: BOLGE=Asya (boş/hepsi = tümü)
 BOLGE = (os.environ.get("BOLGE") or "").strip()
 if BOLGE.lower() in ("", "hepsi", "all"):
     BOLGE = None
 
+IATA_DUZELTMELERI = {"HGK": "HKG", "DWF": "DFW"}
+SEHIRLER = {
+    "IST": "İstanbul",
+    "SAW": "İstanbul (Sabiha Gökçen)",
+    "ESB": "Ankara",
+    "BER": "Berlin",
+    "MUC": "Münih",
+    "FRA": "Frankfurt",
+    "VIE": "Viyana",
+    "AMS": "Amsterdam",
+    "FCO": "Roma",
+    "CGN": "Köln",
+    "MIA": "Miami",
+    "PVG": "Şanghay",
+    "HKG": "Hong Kong",
+    "PEK": "Pekin",
+    "CAN": "Guangzhou",
+    "NRT": "Tokyo (Narita)",
+    "HND": "Tokyo (Haneda)",
+    "KIX": "Osaka",
+    "ICN": "Seul",
+    "SGN": "Ho Chi Minh City",
+    "JFK": "New York",
+    "ORD": "Chicago",
+    "BOS": "Boston",
+    "DFW": "Dallas/Fort Worth",
+    "IAH": "Houston",
+    "IAD": "Washington, DC",
+    "LAS": "Las Vegas",
+    "SDU": "Rio de Janeiro",
+    "EZE": "Buenos Aires",
+    "HAV": "Havana",
+}
 
-def tarih_uret(tarihler: dict):
-    """Config'teki tarih tanımından (liste veya aralık) date nesneleri üretir."""
+
+def kodu_duzelt(kod: str) -> str:
+    temiz = str(kod or "").strip().upper()
+    return IATA_DUZELTMELERI.get(temiz, temiz)
+
+
+def sehir(kod: str) -> str:
+    return SEHIRLER.get(kod, kod)
+
+
+def rota_etiketi(kalkis: str, varis: str) -> str:
+    return f"{sehir(kalkis)} ({kalkis}) → {sehir(varis)} ({varis})"
+
+
+def tarih_uret(tarihler: dict[str, Any]) -> Iterable[dt.date]:
     if "liste" in tarihler:
-        for t in tarihler["liste"]:
-            yield dt.date.fromisoformat(t)
+        for tarih in tarihler["liste"]:
+            yield dt.date.fromisoformat(tarih)
         return
-    d = dt.date.fromisoformat(tarihler["baslangic"])
+
+    gun = dt.date.fromisoformat(tarihler["baslangic"])
     son = dt.date.fromisoformat(tarihler["bitis"])
     adim = max(1, int(tarihler.get("adimGun", 1)))
-    while d <= son:
-        yield d
-        d += dt.timedelta(days=adim)
+    while gun <= son:
+        yield gun
+        gun += dt.timedelta(days=adim)
 
 
-def rotalari_ac(rota: dict):
-    """'varislar' ve/veya 'kalkislar' listelerini tek tek rotalara açar.
-    Tek 'varis'/'kalkis' yazımı da desteklenir (geriye dönük uyumlu)."""
-    kalkislar = rota.get("kalkislar") or [rota["kalkis"]]
-    varislar = rota.get("varislar") or [rota["varis"]]
-    for k in kalkislar:
-        for v in varislar:
-            tek = {x: y for x, y in rota.items()
-                   if x not in ("kalkislar", "varislar", "ad")}
-            tek["kalkis"], tek["varis"] = k, v
-            if rota.get("ad"):
-                # Tek destinasyonluk blokta kullanıcının verdiği ad korunur;
-                # çoklu blokta her rota kendi başlığını alır.
-                tek["ad"] = (rota["ad"] if len(kalkislar) * len(varislar) == 1
-                             else f'{rota["ad"]}: {k} → {v}')
-            yield tek
+def rotalari_ac(blok: dict[str, Any]) -> Iterable[dict[str, Any]]:
+    kalkislar = blok.get("kalkislar") or [blok.get("kalkis")]
+    varislar = blok.get("varislar") or [blok.get("varis")]
+
+    for ham_kalkis in kalkislar:
+        for ham_varis in varislar:
+            kalkis, varis = kodu_duzelt(ham_kalkis), kodu_duzelt(ham_varis)
+            rota = {
+                anahtar: deger
+                for anahtar, deger in blok.items()
+                if anahtar not in ("kalkislar", "varislar", "ad")
+            }
+            rota["kalkis"], rota["varis"] = kalkis, varis
+            rota["ad"] = blok.get("ad") or rota_etiketi(kalkis, varis)
+            yield rota
 
 
-def sorgula(rota: dict, gidis: dt.date, ayarlar: dict):
-    """Tek bir rota+tarih için Google Flights sorgusu; (fiyat, paraBirimi,
-    ucusSayisi, aktarma) döner ya da FlightsNotFound fırlatır."""
-    tip = rota.get("seyahatTipi", "O").upper()
-    havayolular = rota.get("havayolular") or ayarlar.get("havayolular") or ["TK"]
+def sorgula(rota: dict[str, Any], gidis: dt.date, ayarlar: dict[str, Any]):
+    tip = str(rota.get("seyahatTipi", "O")).upper()
+    havayollari = rota.get("havayolular") or ayarlar.get("havayolular") or ["TK"]
     max_aktarma = rota.get("maxAktarma", ayarlar.get("maxAktarma"))
-    para = (ayarlar.get("paraBirimiTercihi") or "TRY").upper()
+    para = str(ayarlar.get("paraBirimiTercihi") or "TRY").upper()
 
-    ucuslar = [FlightQuery(
-        date=gidis.isoformat(),
-        from_airport=rota["kalkis"],
-        to_airport=rota["varis"],
-        max_stops=max_aktarma,
-        airlines=havayolular,
-    )]
+    ucuslar = [
+        FlightQuery(
+            date=gidis.isoformat(),
+            from_airport=rota["kalkis"],
+            to_airport=rota["varis"],
+            max_stops=max_aktarma,
+            airlines=havayollari,
+        )
+    ]
     if tip == "R":
         donus = gidis + dt.timedelta(days=int(rota.get("konaklamaGun", 7)))
-        ucuslar.append(FlightQuery(
-            date=donus.isoformat(),
-            from_airport=rota["varis"],
-            to_airport=rota["kalkis"],
-            max_stops=max_aktarma,
-            airlines=havayolular,
-        ))
+        ucuslar.append(
+            FlightQuery(
+                date=donus.isoformat(),
+                from_airport=rota["varis"],
+                to_airport=rota["kalkis"],
+                max_stops=max_aktarma,
+                airlines=havayollari,
+            )
+        )
 
-    q = create_query(
+    sorgu = create_query(
         flights=ucuslar,
         trip="round-trip" if tip == "R" else "one-way",
         seat=ayarlar.get("kabin", "economy"),
@@ -118,132 +150,178 @@ def sorgula(rota: dict, gidis: dt.date, ayarlar: dict):
         language="tr",
         currency=para,
     )
-    sonuc = get_flights(q, proxy=PROXY)
-
-    # Sorgu zaten havayolu filtreli; yine de savunmacı davranıp fiyatı 0'dan
-    # büyük seçenekler arasından en düşüğünü alıyoruz.
-    fiyatli = [f for f in sonuc if getattr(f, "price", 0) and f.price > 0]
+    sonuc = get_flights(sorgu, proxy=PROXY)
+    fiyatli = [ucus for ucus in sonuc if getattr(ucus, "price", 0) and ucus.price > 0]
     if not fiyatli:
-        raise FlightsNotFound("fiyatlı seçenek yok")
-    en_ucuz = min(fiyatli, key=lambda f: f.price)
-    aktarma = max(len(en_ucuz.flights) - 1, 0) if getattr(en_ucuz, "flights", None) else None
+        raise FlightsNotFound("uygun fiyatlı TK uçuşu bulunamadı")
+
+    en_ucuz = min(fiyatli, key=lambda ucus: ucus.price)
+    bacaklar = getattr(en_ucuz, "flights", None)
+    aktarma = max(len(bacaklar) - 1, 0) if bacaklar else None
     return float(en_ucuz.price), para, len(fiyatli), aktarma
+
+
+def tekrar_edilebilir_hata(hata: Exception) -> bool:
+    ad = type(hata).__name__.lower()
+    metin = str(hata).lower()
+    isaretler = ("timeout", "connection", "proxy", "temporar", "429", "503", "network")
+    return any(isaret in ad or isaret in metin for isaret in isaretler)
+
+
+def eski_veriyi_oku() -> dict[str, Any]:
+    if not OUTPUT_PATH.exists():
+        return {}
+    try:
+        return json.loads(OUTPUT_PATH.read_text(encoding="utf-8"))
+    except Exception as hata:  # noqa: BLE001
+        print("Önceki sonuçlar okunamadı:", hata)
+        return {}
 
 
 def main() -> int:
     config = json.loads(CONFIG_PATH.read_text(encoding="utf-8"))
     ayarlar = config.get("ayarlar", {})
-    bekleme = float(ayarlar.get("istekArasiBeklemeSn", 3))
+    bekleme = max(0.0, float(ayarlar.get("istekArasiBeklemeSn", 2.5)))
+    deneme_sayisi = max(1, int(ayarlar.get("yenidenDenemeSayisi", 2)))
+    eski = eski_veriyi_oku()
+    simdi = dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds")
 
-    hucreler = []
-    hata_sayisi = 0
+    yeni_hucreler: list[dict[str, Any]] = []
     print(f"Sorgulanan bölge: {BOLGE or 'hepsi'}")
 
     for blok in config.get("rotalar", []):
-      if BOLGE and (blok.get("bolge") or "Avrupa") != BOLGE:
-        continue          # bu çalıştırmada başka bölge sorgulanıyor
-      for rota in rotalari_ac(blok):
-        for gidis in tarih_uret(rota["tarihler"]):
-            hucre = {
-                "rota": rota.get("ad") or f'{rota["kalkis"]} → {rota["varis"]}',
-                "kalkis": rota["kalkis"],
-                "varis": rota["varis"],
-                "seyahatTipi": rota.get("seyahatTipi", "O").upper(),
-                "gidisTarihi": gidis.isoformat(),
-            }
-            if rota.get("bolge"):
-                hucre["bolge"] = rota["bolge"]
-            if hucre["seyahatTipi"] == "R":
-                hucre["donusTarihi"] = (
-                    gidis + dt.timedelta(days=int(rota.get("konaklamaGun", 7)))
-                ).isoformat()
+        bolge = blok.get("bolge") or "Avrupa"
+        if BOLGE and bolge != BOLGE:
+            continue
 
-            son_hata = None
-            for deneme in range(3):  # geçici engellere karşı 3 deneme
-                try:
-                    tutar, para, aday, aktarma = sorgula(rota, gidis, ayarlar)
-                    hucre.update({
-                        "tutar": round(tutar, 2),
-                        "paraBirimi": para,
-                        "adayFiyatSayisi": aday,
-                        "durum": "ok",
-                    })
-                    if aktarma is not None:
-                        hucre["aktarma"] = aktarma
-                    son_hata = None
-                    break
-                except FlightsNotFound as e:
-                    hucre["durum"] = "fiyat-bulunamadi"
-                    hucre["detay"] = str(e)[:200]
-                    son_hata = None
-                    break
-                except Exception as e:  # ağ/parse hatası — bekleyip yeniden dene
-                    son_hata = e
-                    time.sleep(5 * (deneme + 1))
-            if son_hata is not None:
-                hata_sayisi += 1
-                hucre["durum"] = "hata"
-                hucre["detay"] = f"{type(son_hata).__name__}: {son_hata}"[:300]
+        for rota in rotalari_ac(blok):
+            for gidis in tarih_uret(rota["tarihler"]):
+                hucre: dict[str, Any] = {
+                    "rota": rota["ad"],
+                    "kalkis": rota["kalkis"],
+                    "kalkisSehir": sehir(rota["kalkis"]),
+                    "varis": rota["varis"],
+                    "varisSehir": sehir(rota["varis"]),
+                    "bolge": bolge,
+                    "seyahatTipi": str(rota.get("seyahatTipi", "O")).upper(),
+                    "gidisTarihi": gidis.isoformat(),
+                    "sorguZamani": simdi,
+                }
+                if hucre["seyahatTipi"] == "R":
+                    hucre["donusTarihi"] = (
+                        gidis + dt.timedelta(days=int(rota.get("konaklamaGun", 7)))
+                    ).isoformat()
 
-            print(f'[{hucre["durum"]:>16}] {hucre["rota"]} {hucre["gidisTarihi"]}'
-                  + (f' → {hucre.get("tutar")} {hucre.get("paraBirimi")}'
-                     if hucre.get("tutar") else ""))
-            hucreler.append(hucre)
-            time.sleep(bekleme)
+                for deneme in range(deneme_sayisi):
+                    try:
+                        tutar, para, aday, aktarma = sorgula(rota, gidis, ayarlar)
+                        hucre.update(
+                            {
+                                "tutar": round(tutar, 2),
+                                "paraBirimi": para,
+                                "adayFiyatSayisi": aday,
+                                "durum": "ok",
+                            }
+                        )
+                        if aktarma is not None:
+                            hucre["aktarma"] = aktarma
+                        break
+                    except FlightsNotFound as hata:
+                        hucre.update({"durum": "fiyat-bulunamadi", "detay": str(hata)[:240]})
+                        break
+                    except (IndexError, TypeError) as hata:
+                        # fast-flights, uygun sonuç olmadığında zaman zaman parse hatası üretiyor.
+                        hucre.update(
+                            {
+                                "durum": "fiyat-bulunamadi",
+                                "detay": f"Uygun uçuş bulunamadı veya sonuç ayrıştırılamadı: {type(hata).__name__}"[:240],
+                            }
+                        )
+                        break
+                    except Exception as hata:  # noqa: BLE001
+                        son_deneme = deneme == deneme_sayisi - 1
+                        if son_deneme or not tekrar_edilebilir_hata(hata):
+                            hucre.update(
+                                {
+                                    "durum": "hata",
+                                    "detay": f"{type(hata).__name__}: {hata}"[:300],
+                                }
+                            )
+                            break
+                        time.sleep(4 * (deneme + 1))
 
-    yeni_sayisi = len(hucreler)
+                print(
+                    f'[{hucre.get("durum", "hata"):>16}] {hucre["rota"]} {hucre["gidisTarihi"]}'
+                    + (f' → {hucre.get("tutar")} {hucre.get("paraBirimi")}' if hucre.get("tutar") else "")
+                )
+                yeni_hucreler.append(hucre)
+                if bekleme:
+                    time.sleep(bekleme)
 
-    # Tek bölge sorgulandıysa, diğer bölgelerin önceki sonuçları korunur
-    if BOLGE and OUTPUT_PATH.exists():
-        try:
-            eski = json.loads(OUTPUT_PATH.read_text(encoding="utf-8"))
-            if not eski.get("ornekVeri"):
-                korunan = [h for h in eski.get("sonuclar", [])
-                           if (h.get("bolge") or "Avrupa") != BOLGE]
-                hucreler = korunan + hucreler
-                print(f"{len(korunan)} hücre diğer bölgelerden korundu.")
-        except Exception as e:
-            print("Önceki sonuçlar okunamadı, sıfırdan yazılıyor:", e)
+    if BOLGE:
+        korunan = [
+            hucre
+            for hucre in eski.get("sonuclar", [])
+            if (hucre.get("bolge") or "Avrupa") != BOLGE
+        ]
+        tum_hucreler = korunan + yeni_hucreler
+    else:
+        tum_hucreler = yeni_hucreler
 
+    bolge_zamanlari = dict(eski.get("bolgeGuncellemeZamanlari") or {})
+    guncellenen_bolgeler = {hucre.get("bolge", "Avrupa") for hucre in yeni_hucreler}
+    for bolge in guncellenen_bolgeler:
+        bolge_zamanlari[bolge] = simdi
+
+    durumlar = [hucre.get("durum") for hucre in tum_hucreler]
     cikti = {
-        "guncellemeZamani": dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds"),
+        "guncellemeZamani": simdi,
         "kaynak": "google-flights (Turkish Airlines filtreli)",
         "sorgulananBolge": BOLGE or "hepsi",
-        "hucreSayisi": len(hucreler),
-        "hataSayisi": hata_sayisi,
-        "sonuclar": hucreler,
+        "bolgeGuncellemeZamanlari": bolge_zamanlari,
+        "hucreSayisi": len(tum_hucreler),
+        "basariSayisi": durumlar.count("ok"),
+        "fiyatBulunamadiSayisi": durumlar.count("fiyat-bulunamadi"),
+        "hataSayisi": durumlar.count("hata"),
+        "yeniHucreSayisi": len(yeni_hucreler),
+        "yeniHataSayisi": sum(1 for hucre in yeni_hucreler if hucre.get("durum") == "hata"),
+        "sonuclar": tum_hucreler,
     }
     OUTPUT_PATH.parent.mkdir(parents=True, exist_ok=True)
     OUTPUT_PATH.write_text(json.dumps(cikti, ensure_ascii=False, indent=2), encoding="utf-8")
 
-    # Geçmiş: yalnız bu çalıştırmada gerçekten sorgulanan fiyatlı hücreler eklenir
-    # (satır başına bir JSON — dosya büyüse de tek satır okunur, git diff'i temiz kalır)
-    olcum_zamani = cikti["guncellemeZamani"]
     satirlar = []
-    for h in hucreler[len(hucreler) - yeni_sayisi:] if yeni_sayisi else []:
-        if h.get("durum") != "ok":
+    for hucre in yeni_hucreler:
+        if hucre.get("durum") != "ok":
             continue
-        satirlar.append(json.dumps({
-            "olcum": olcum_zamani,                 # sorgunun yapıldığı an
-            "rota": h["rota"],
-            "kalkis": h["kalkis"],
-            "varis": h["varis"],
-            "bolge": h.get("bolge", "Avrupa"),
-            "gidisTarihi": h["gidisTarihi"],
-            "donusTarihi": h.get("donusTarihi"),
-            "tutar": h["tutar"],
-            "paraBirimi": h["paraBirimi"],
-        }, ensure_ascii=False))
+        satirlar.append(
+            json.dumps(
+                {
+                    "olcum": simdi,
+                    "rota": hucre["rota"],
+                    "kalkis": hucre["kalkis"],
+                    "kalkisSehir": hucre["kalkisSehir"],
+                    "varis": hucre["varis"],
+                    "varisSehir": hucre["varisSehir"],
+                    "bolge": hucre["bolge"],
+                    "gidisTarihi": hucre["gidisTarihi"],
+                    "donusTarihi": hucre.get("donusTarihi"),
+                    "tutar": hucre["tutar"],
+                    "paraBirimi": hucre["paraBirimi"],
+                },
+                ensure_ascii=False,
+            )
+        )
+    HISTORY_PATH.parent.mkdir(parents=True, exist_ok=True)
     if satirlar:
-        with HISTORY_PATH.open("a", encoding="utf-8") as f:
-            f.write("\n".join(satirlar) + "\n")
-        print(f"{len(satirlar)} ölçüm geçmişe eklendi → {HISTORY_PATH}")
+        with HISTORY_PATH.open("a", encoding="utf-8") as dosya:
+            dosya.write("\n".join(satirlar) + "\n")
 
-    print(f"\n{len(hucreler)} hücre yazıldı → {OUTPUT_PATH} (yeni: {yeni_sayisi}, hata: {hata_sayisi})")
-    if yeni_sayisi and hata_sayisi == yeni_sayisi:
-        # Sonuç dosyası (hata ayrıntılarıyla) yine de commit'lensin diye
-        # iş akışını düşürmüyoruz; durum panoda görünür.
-        print("UYARI: hiçbir hücre için fiyat alınamadı — ayrıntılar results.json içinde.")
+    print(
+        f"\n{len(tum_hucreler)} hücre yazıldı; "
+        f"başarılı={cikti['basariSayisi']}, bulunamadı={cikti['fiyatBulunamadiSayisi']}, "
+        f"hata={cikti['hataSayisi']}"
+    )
     return 0
 
 
