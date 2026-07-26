@@ -138,8 +138,9 @@
   .alan input,.alan select{width:100%;background:var(--pano-acik);border:1px solid var(--cizgi);border-radius:8px;color:var(--metin);padding:9px 10px;min-height:40px;font-family:"IBM Plex Mono",monospace;font-size:.8rem}
   .tarih-secim{position:relative;display:flex}
   .tarih-secim>input[type="text"]{padding-right:48px}
-  .takvim-dugme{position:absolute;right:0;top:0;width:42px;height:40px;display:grid;place-items:center;border-left:1px solid var(--cizgi);color:var(--amber);pointer-events:none}
-  .takvim-native{position:absolute!important;right:0;top:0;width:42px!important;height:40px;opacity:0;cursor:pointer;padding:0!important}
+  .takvim-dugme{position:absolute;right:0;top:0;width:42px;height:40px;display:grid;place-items:center;background:transparent;border:0;border-left:1px solid var(--cizgi);color:var(--amber);cursor:pointer;font-size:1rem}
+  .takvim-dugme:hover{background:#ffffff0a}
+  .takvim-native{position:absolute!important;right:42px;top:18px;width:1px!important;height:1px!important;min-height:1px!important;opacity:0;pointer-events:none;padding:0!important;border:0!important}
   .satir{display:grid;grid-template-columns:115px 1fr 150px auto;gap:10px;align-items:end;background:var(--pano);border:1px solid var(--cizgi);border-radius:var(--radius);padding:12px;margin-bottom:9px}
   .sil{min-height:40px;background:transparent;border:1px solid var(--cizgi);border-radius:8px;color:var(--metin-soluk);padding:8px 12px;cursor:pointer}
   .sil:hover{color:var(--kirmizi);border-color:var(--kirmizi)}
@@ -223,8 +224,8 @@
     <p class="ipucu">Tarih ayarları tüm bölgelere uygulanır. Her rota grubunda aktarma sınırını ayrıca seçebilirsiniz.</p>
     <div class="genel">
       <div class="alan"><label>Seyahat tipi</label><select id="gTip"><option value="R">Gidiş-dönüş</option><option value="O">Tek yön</option></select></div>
-      <div class="alan"><label>İlk gidiş (GG.AA.YYYY)</label><div class="tarih-secim"><input id="gBas" type="text" inputmode="numeric" maxlength="10" placeholder="17.08.2026"><span class="takvim-dugme" aria-hidden="true">▣</span><input id="gBasTakvim" class="takvim-native" type="date" aria-label="İlk gidiş tarihini takvimden seç"></div></div>
-      <div class="alan"><label>Son gidiş (GG.AA.YYYY)</label><div class="tarih-secim"><input id="gBit" type="text" inputmode="numeric" maxlength="10" placeholder="24.08.2026"><span class="takvim-dugme" aria-hidden="true">▣</span><input id="gBitTakvim" class="takvim-native" type="date" aria-label="Son gidiş tarihini takvimden seç"></div></div>
+      <div class="alan"><label>İlk gidiş (GG.AA.YYYY)</label><div class="tarih-secim"><input id="gBas" type="text" inputmode="numeric" maxlength="10" placeholder="17.08.2026"><button type="button" id="gBasTakvimAc" class="takvim-dugme" aria-label="İlk gidiş takvimini aç">📅</button><input id="gBasTakvim" class="takvim-native" type="date" tabindex="-1" aria-hidden="true"></div></div>
+      <div class="alan"><label>Son gidiş (GG.AA.YYYY)</label><div class="tarih-secim"><input id="gBit" type="text" inputmode="numeric" maxlength="10" placeholder="24.08.2026"><button type="button" id="gBitTakvimAc" class="takvim-dugme" aria-label="Son gidiş takvimini aç">📅</button><input id="gBitTakvim" class="takvim-native" type="date" tabindex="-1" aria-hidden="true"></div></div>
       <div class="alan"><label>Kaç günde bir</label><input id="gAdim" type="number" min="1" value="2"></div>
       <div class="alan" id="gKonakAlan"><label>Dönüş kaç gün sonra</label><input id="gKonak" type="number" min="1" value="7"></div>
       <div class="alan"><label>Yolcu</label><input id="gYolcu" type="number" min="1" max="9" value="1"></div>
@@ -409,8 +410,8 @@ function ozetle(){const d1=new Date(genel.bas),d2=new Date(genel.bit);let hucre=
 function editorAc(ac){$("#ortu").classList.toggle("acik",ac);document.body.style.overflow=ac?"hidden":""}
 
 $(".genel").addEventListener("input",()=>{genel.tip=$("#gTip").value;genel.bas=trToIso($("#gBas").value);genel.bit=trToIso($("#gBit").value);genel.adim=Math.max(1,+$("#gAdim").value||1);genel.konak=Math.max(1,+$("#gKonak").value||1);genel.yolcu=Math.max(1,+$("#gYolcu").value||1);$("#gKonakAlan").style.display=genel.tip==="O"?"none":"flex";ozetle()});
-function takvimBagla(metinSecici,takvimSecici){const metin=$(metinSecici),takvim=$(takvimSecici);takvim.addEventListener("change",()=>{if(!takvim.value)return;metin.value=isoToTr(takvim.value);metin.dispatchEvent(new Event("input",{bubbles:true}))});metin.addEventListener("input",()=>{const iso=trToIso(metin.value);if(iso)takvim.value=iso})}
-takvimBagla("#gBas","#gBasTakvim");takvimBagla("#gBit","#gBitTakvim");
+function takvimBagla(metinSecici,takvimSecici,dugmeSecici){const metin=$(metinSecici),takvim=$(takvimSecici),dugme=$(dugmeSecici);dugme.addEventListener("click",()=>{takvim.value=trToIso(metin.value)||takvim.value;try{if(typeof takvim.showPicker==="function")takvim.showPicker();else{takvim.focus();takvim.click()}}catch(_){takvim.focus();takvim.click()}});takvim.addEventListener("change",()=>{if(!takvim.value)return;metin.value=isoToTr(takvim.value);metin.dispatchEvent(new Event("input",{bubbles:true}))});metin.addEventListener("input",()=>{const iso=trToIso(metin.value);if(iso)takvim.value=iso})}
+takvimBagla("#gBas","#gBasTakvim","#gBasTakvimAc");takvimBagla("#gBit","#gBitTakvim","#gBitTakvimAc");
 $("#bloklar").addEventListener("input",e=>{const i=e.target.dataset.i,k=e.target.dataset.k;if(i===undefined||!k)return;const b=config.rotalar[+i];if(k==="varislar")b.varislar=e.target.value.split(",").map(kodDuzelt).filter(Boolean);else if(k==="kalkis")b.kalkis=kodDuzelt(e.target.value);else b.maxAktarma=e.target.value===""?"":+e.target.value;ozetle()});
 $("#bloklar").addEventListener("click",e=>{const i=e.target.dataset?.sil;if(i===undefined)return;config.rotalar.splice(+i,1);editorCiz()});
 $("#btnBlokEkle").addEventListener("click",()=>{config.rotalar.push({kalkis:"IST",varislar:[],bolge:aktifSekme,maxAktarma:0});editorCiz()});
