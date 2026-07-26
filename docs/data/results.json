@@ -1,9 +1,9 @@
 {
-  "guncellemeZamani": "2026-07-26T12:15:14+00:00",
+  "guncellemeZamani": "2026-07-26T12:31:30+00:00",
   "kaynak": "google-flights (Turkish Airlines filtreli)",
-  "sorgulananBolge": "Avrupa",
+  "sorgulananBolge": "Asya",
   "bolgeGuncellemeZamanlari": {
-    "Asya": "2026-07-26T12:07:48+00:00",
+    "Asya": "2026-07-26T12:31:09+00:00",
     "Amerika": "2026-07-26T12:11:43+00:00",
     "Avrupa": "2026-07-26T12:14:50+00:00"
   },
@@ -11,7 +11,7 @@
   "basariSayisi": 87,
   "fiyatBulunamadiSayisi": 17,
   "hataSayisi": 10,
-  "yeniHucreSayisi": 24,
+  "yeniHucreSayisi": 4,
   "yeniHataSayisi": 0,
   "sonuclar": [
     {
@@ -858,13 +858,14 @@
       "bolge": "Asya",
       "seyahatTipi": "R",
       "gidisTarihi": "2026-09-01",
-      "sorguZamani": "2026-07-26T12:07:04+00:00",
+      "sorguZamani": "2026-07-26T12:31:09+00:00",
       "donusTarihi": "2026-09-08",
       "tutar": 56232.0,
       "paraBirimi": "TRY",
       "adayFiyatSayisi": 2,
       "durum": "ok",
-      "aktarma": 0
+      "aktarma": 0,
+      "oncekiTutar": 56232.0
     },
     {
       "rota": "İstanbul (IST) → Hong Kong (HKG)",
@@ -876,13 +877,14 @@
       "bolge": "Asya",
       "seyahatTipi": "R",
       "gidisTarihi": "2026-09-03",
-      "sorguZamani": "2026-07-26T12:07:04+00:00",
+      "sorguZamani": "2026-07-26T12:31:09+00:00",
       "donusTarihi": "2026-09-10",
       "tutar": 56232.0,
       "paraBirimi": "TRY",
       "adayFiyatSayisi": 2,
       "durum": "ok",
-      "aktarma": 0
+      "aktarma": 0,
+      "oncekiTutar": 56232.0
     },
     {
       "rota": "İstanbul (IST) → Hong Kong (HKG)",
@@ -894,13 +896,14 @@
       "bolge": "Asya",
       "seyahatTipi": "R",
       "gidisTarihi": "2026-09-05",
-      "sorguZamani": "2026-07-26T12:07:04+00:00",
+      "sorguZamani": "2026-07-26T12:31:09+00:00",
       "donusTarihi": "2026-09-12",
       "tutar": 57648.0,
       "paraBirimi": "TRY",
       "adayFiyatSayisi": 2,
       "durum": "ok",
-      "aktarma": 0
+      "aktarma": 0,
+      "oncekiTutar": 57648.0
     },
     {
       "rota": "İstanbul (IST) → Hong Kong (HKG)",
@@ -912,13 +915,14 @@
       "bolge": "Asya",
       "seyahatTipi": "R",
       "gidisTarihi": "2026-09-07",
-      "sorguZamani": "2026-07-26T12:07:04+00:00",
+      "sorguZamani": "2026-07-26T12:31:09+00:00",
       "donusTarihi": "2026-09-14",
       "tutar": 56232.0,
       "paraBirimi": "TRY",
       "adayFiyatSayisi": 2,
       "durum": "ok",
-      "aktarma": 0
+      "aktarma": 0,
+      "oncekiTutar": 56232.0
     },
     {
       "rota": "İstanbul (IST) → Tokyo (Haneda) (HND)",
