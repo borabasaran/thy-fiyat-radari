@@ -269,6 +269,7 @@ if(!BOLGELER.includes(aktifSekme))aktifSekme="Avrupa";
 let sonVeri=null,config=null,genel={tip:"R",bas:"",bit:"",adim:2,konak:7,yolcu:1};
 let izleyici=null,islemBaslangic=null,islemSaat=null,aktifRunId=null,aktifToken=null;
 const rotaDurumlari=new Map();
+const gecerliRotalar=new Set();
 
 function sekmeCiz(){const say=b=>new Set((sonVeri?.sonuclar||[]).filter(h=>(h.bolge||"Avrupa")===b).map(rotaKey)).size;$("#sekmeler").innerHTML=BOLGELER.map(b=>`<button data-b="${b}" class="${b===aktifSekme?"aktif":""}">${b}<span class="sayi">${say(b)}</span></button>`).join("")}
 $("#sekmeler").addEventListener("click",e=>{const b=e.target.closest("button")?.dataset.b;if(!b)return;aktifSekme=b;localStorage.setItem("aktifSekme",b);$("#btnCalistir").textContent=`${b} sorgusunu çalıştır`;sekmeCiz();if(sonVeri)ciz(sonVeri);if($("#ortu").classList.contains("acik"))editorCiz()});
@@ -283,6 +284,7 @@ function rotaDurumHtml(anahtar,hucreler){
     return `<span class="rota-durum ${sinif}">${metin}</span>`;
   }
   const hata=hucreler.some(h=>h.durum==="hata");
+  if(hata&&!gecerliRotalar.has(anahtar))return `<span class="rota-durum bekliyor">rota ayarlardan kaldırılmış</span>`;
   if(hata)return `<span class="rota-durum hata">teknik hata</span><button class="rota-eylem" data-retry="${esc(anahtar)}">yalnız bunu yeniden dene</button>`;
   return "";
 }
@@ -391,6 +393,7 @@ async function runIzle(token,runId,eskiZaman){
 }
 
 async function tetikle(token,rota=""){
+  if($("#btnCalistir").disabled){bildir("Devam eden sorgu tamamlanmadan yeni sorgu başlatılamaz.","bekle");return}
   const depo=depoBilgisi();if(!depo){bildir("Depo adı çözülemedi; Actions sekmesinden çalıştırın.","kotu");return}
   const eski=sonVeri?.guncellemeZamani||"",baslangic=new Date().toISOString();
   islemGoster(rota?`${rota} yeniden sorgulanıyor…`:`${aktifSekme} fiyatları sorgulanıyor…`);bildir("GitHub Actions tetikleniyor…","bekle");
@@ -404,6 +407,7 @@ async function tetikle(token,rota=""){
 }
 
 async function configYukle(){const y=await fetch("config.json?t="+Date.now(),{cache:"no-store"});const ham=await y.json();config={ayarlar:ham.ayarlar||{},rotalar:[]};genel={tip:"R",bas:"",bit:"",adim:2,konak:7,yolcu:+ham.ayarlar?.yolcuSayisi||1};for(const b of ham.rotalar||[]){config.rotalar.push({kalkis:kodDuzelt(b.kalkis||"IST"),varislar:(b.varislar||(b.varis?[b.varis]:[])).map(kodDuzelt),bolge:b.bolge||"Avrupa",maxAktarma:b.maxAktarma??""});const t=b.tarihler||{};if(!genel.bas)genel.bas=t.baslangic||(t.liste?.slice().sort()[0]||"");if(!genel.bit)genel.bit=t.bitis||(t.liste?.slice().sort().pop()||"");if(t.adimGun)genel.adim=t.adimGun;if(b.seyahatTipi)genel.tip=b.seyahatTipi;if(b.konaklamaGun)genel.konak=b.konaklamaGun}if(!genel.bas){const d=new Date();d.setDate(d.getDate()+1);genel.bas=d.toISOString().slice(0,10);d.setDate(d.getDate()+14);genel.bit=d.toISOString().slice(0,10)}}
+async function gecerliRotalariYukle(){try{const y=await fetch("config.json?t="+Date.now(),{cache:"no-store"});if(!y.ok)throw new Error("HTTP "+y.status);const ham=await y.json();gecerliRotalar.clear();for(const b of ham.rotalar||[]){const kalkislar=b.kalkislar||[b.kalkis||"IST"],varislar=b.varislar||(b.varis?[b.varis]:[]);for(const kalkis of kalkislar)for(const varis of varislar)gecerliRotalar.add(`${kodDuzelt(kalkis)}-${kodDuzelt(varis)}`)}if(sonVeri)ciz(sonVeri)}catch(_){}}
 function genelCiz(){$("#gTip").value=genel.tip;$("#gBas").value=isoToTr(genel.bas);$("#gBit").value=isoToTr(genel.bit);$("#gBasTakvim").value=genel.bas;$("#gBitTakvim").value=genel.bit;$("#gAdim").value=genel.adim;$("#gKonak").value=genel.konak;$("#gYolcu").value=genel.yolcu;$("#gKonakAlan").style.display=genel.tip==="O"?"none":"flex"}
 function editorCiz(){const kap=$("#bloklar");kap.innerHTML="";$("#editorBaslik").textContent=`${aktifSekme.toUpperCase()} ROTALARI`;config.rotalar.forEach((b,i)=>{if((b.bolge||"Avrupa")!==aktifSekme)return;const d=document.createElement("div");d.className="satir";d.innerHTML=`<div class="alan"><label>Kalkış</label><input data-i="${i}" data-k="kalkis" maxlength="3" value="${esc(b.kalkis)}"></div><div class="alan"><label>Varışlar — virgülle</label><input data-i="${i}" data-k="varislar" value="${esc((b.varislar||[]).join(", "))}" placeholder="BER, MUC, FRA"></div><div class="alan"><label>En fazla aktarma</label><select data-i="${i}" data-k="maxAktarma"><option value="" ${b.maxAktarma===""?"selected":""}>farketmez</option><option value="0" ${+b.maxAktarma===0?"selected":""}>aktarmasız</option><option value="1" ${+b.maxAktarma===1?"selected":""}>1 aktarma</option><option value="2" ${+b.maxAktarma===2?"selected":""}>2 aktarma</option></select></div><button class="sil" data-sil="${i}">Sil</button>`;kap.appendChild(d)});if(!kap.children.length)kap.innerHTML='<p class="ipucu">Bu bölgede rota yok. “+ Rota grubu” ile ekleyin.</p>';ozetle()}
 function ozetle(){const d1=new Date(genel.bas),d2=new Date(genel.bit);let hucre=0;if(!isNaN(d1)&&!isNaN(d2)&&d2>=d1){const gun=Math.floor((d2-d1)/86400000)+1,tarihSayisi=Math.ceil(gun/Math.max(1,genel.adim));for(const b of config.rotalar)if((b.bolge||"Avrupa")===aktifSekme)hucre+=tarihSayisi*(b.varislar?.length||0)}const dk=Math.max(1,Math.round(hucre*5/60));$("#ozetEditor").textContent=hucre?`${hucre} sorgu · yaklaşık ${dk}–${Math.max(dk+1,Math.round(dk*1.7))} dk`:""}
@@ -422,12 +426,12 @@ function dogrula(){if(!genel.bas||!genel.bit)return"Tarihleri GG.AA.YYYY biçimi
 function b64(metin){const bayt=new TextEncoder().encode(metin);let s="";bayt.forEach(x=>s+=String.fromCharCode(x));return btoa(s)}
 async function configKaydet(token){const depo=depoBilgisi();if(!depo)throw new Error("Depo adı çözülemedi");const url=`https://api.github.com/repos/${depo.owner}/${depo.repo}/contents/docs/config.json`,bas={Authorization:"Bearer "+token,Accept:"application/vnd.github+json","X-GitHub-Api-Version":"2022-11-28"};const mevcut=await fetch(url+"?ref=main&t="+Date.now(),{headers:bas,cache:"no-store"});if(!mevcut.ok)throw new Error("config.json okunamadı (HTTP "+mevcut.status+")");const sha=(await mevcut.json()).sha;config.ayarlar.yolcuSayisi=genel.yolcu;const yeni={ayarlar:config.ayarlar,rotalar:config.rotalar.map(b=>{const r={kalkis:kodDuzelt(b.kalkis),varislar:(b.varislar||[]).map(kodDuzelt),bolge:b.bolge||"Avrupa",seyahatTipi:genel.tip,tarihler:{baslangic:genel.bas,bitis:genel.bit,adimGun:genel.adim}};if(genel.tip==="R")r.konaklamaGun=genel.konak;if(b.maxAktarma!=="")r.maxAktarma=+b.maxAktarma;return r})};const y=await fetch(url,{method:"PUT",headers:bas,body:JSON.stringify({message:`Rotalar panodan güncellendi (${aktifSekme})`,content:b64(JSON.stringify(yeni,null,2)),sha,branch:"main"})});if(!y.ok)throw new Error("Kaydedilemedi (HTTP "+y.status+")");return true}
 
-$("#btnKaydet").addEventListener("click",async()=>{const hata=dogrula();if(hata){bildir(hata,"kotu");return}const token=localStorage.getItem("ghToken");if(!token){editorAc(false);$("#patKutu").classList.add("acik");bildir("Önce token girin.","bekle");return}$("#btnKaydet").disabled=true;bildir("Rotalar kaydediliyor…","bekle");try{await configKaydet(token);editorAc(false);bildir("Rotalar kaydedildi; sorgu başlatılıyor…","iyi");await tetikle(token)}catch(e){bildir("Kaydetme hatası: "+e.message,"kotu")}finally{$("#btnKaydet").disabled=false}});
+$("#btnKaydet").addEventListener("click",async()=>{const hata=dogrula();if(hata){bildir(hata,"kotu");return}const token=localStorage.getItem("ghToken");if(!token){editorAc(false);$("#patKutu").classList.add("acik");bildir("Önce token girin.","bekle");return}$("#btnKaydet").disabled=true;bildir("Rotalar kaydediliyor…","bekle");try{await configKaydet(token);await gecerliRotalariYukle();editorAc(false);bildir("Rotalar kaydedildi; sorgu başlatılıyor…","iyi");await tetikle(token)}catch(e){bildir("Kaydetme hatası: "+e.message,"kotu")}finally{$("#btnKaydet").disabled=false}});
 $("#btnCalistir").addEventListener("click",()=>{const token=localStorage.getItem("ghToken");if(token)tetikle(token);else{$("#patKutu").classList.add("acik");$("#pat").focus();bildir("Sorgu için token girin.","bekle")}});
 $("#btnPatKaydet").addEventListener("click",()=>{const t=$("#pat").value.trim();if(!t){bildir("Token boş olamaz.","kotu");return}localStorage.setItem("ghToken",t);$("#patKutu").classList.remove("acik");tetikle(t)});
 $("#btnToken").addEventListener("click",()=>{localStorage.removeItem("ghToken");$("#pat").value="";$("#patKutu").classList.add("acik");$("#pat").focus();bildir("Yeni token girin.","bekle")});
 $("#btnYenile").addEventListener("click",()=>yukle());
-$("#icerik").addEventListener("click",e=>{const rota=e.target.closest("[data-retry]")?.dataset.retry;if(!rota)return;const token=localStorage.getItem("ghToken");if(token)tetikle(token,rota);else{$("#patKutu").classList.add("acik");bildir(`${rota} rotasını yeniden sorgulamak için token girin.`,"bekle")}});
+$("#icerik").addEventListener("click",e=>{const rota=e.target.closest("[data-retry]")?.dataset.retry;if(!rota)return;if(!gecerliRotalar.has(rota)){bildir(`${rota} artık rota ayarlarında bulunmuyor.`,"kotu");return}const token=localStorage.getItem("ghToken");if(token)tetikle(token,rota);else{$("#patKutu").classList.add("acik");bildir(`${rota} rotasını yeniden sorgulamak için token girin.`,"bekle")}});
 $("#btnIptal").addEventListener("click",async()=>{if(!aktifRunId||!aktifToken)return;const depo=depoBilgisi();$("#btnIptal").disabled=true;try{const y=await fetch(`https://api.github.com/repos/${depo.owner}/${depo.repo}/actions/runs/${aktifRunId}/cancel`,{method:"POST",headers:apiBaslik(aktifToken)});if(y.status!==202)throw new Error("GitHub API "+y.status);bildir("Durdurma isteği gönderildi.","bekle")}catch(e){bildir("Durdurulamadı: "+e.message,"kotu")}finally{$("#btnIptal").disabled=false}});
 
 async function kaldigiYerdenIzle(){
@@ -435,7 +439,7 @@ async function kaldigiYerdenIzle(){
   try{const r=JSON.parse(kayit);aktifSekme=BOLGELER.includes(r.bolge)?r.bolge:aktifSekme;islemGoster(`${aktifSekme} sorgusu sürüyor…`);islemBaslangic=new Date(r.baslangic).getTime()||Date.now();await runIzle(token,r.id,r.eskiZaman||"")}catch(e){localStorage.removeItem("aktifFiyatRun")}
 }
 
-$("#btnCalistir").textContent=`${aktifSekme} sorgusunu çalıştır`;sekmeCiz();yukle().then(kaldigiYerdenIzle);
+$("#btnCalistir").textContent=`${aktifSekme} sorgusunu çalıştır`;sekmeCiz();Promise.all([yukle(),gecerliRotalariYukle()]).then(kaldigiYerdenIzle);
 </script>
 </body>
 </html>
