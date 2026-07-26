@@ -81,7 +81,7 @@ jobs:
   birlestir:
     name: Sonuçları birleştir
     needs: [hazirla, sorgula]
-    if: ${{ always() && needs.hazirla.result == 'success' }}
+    if: ${{ always() && needs.hazirla.result == 'success' && needs.hazirla.outputs.route_count != '0' && needs.sorgula.result != 'skipped' }}
     runs-on: ubuntu-latest
     permissions:
       contents: write
