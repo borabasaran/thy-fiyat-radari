@@ -62,21 +62,7 @@
         "BOS",
         "DFW",
         "IAH",
-        "IAD"
-      ],
-      "bolge": "Amerika",
-      "seyahatTipi": "R",
-      "tarihler": {
-        "baslangic": "2026-08-17",
-        "bitis": "2026-08-24",
-        "adimGun": 2
-      },
-      "konaklamaGun": 7,
-      "maxAktarma": 0
-    },
-    {
-      "kalkis": "IST",
-      "varislar": [
+        "IAD",
         "LAS",
         "SDU",
         "EZE",
@@ -90,7 +76,7 @@
         "adimGun": 2
       },
       "konaklamaGun": 7,
-      "maxAktarma": 1
+      "maxAktarma": 0
     }
   ]
 }
