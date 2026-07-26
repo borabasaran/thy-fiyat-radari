@@ -1,16 +1,16 @@
 {
-  "guncellemeZamani": "2026-07-26T12:11:06+00:00",
+  "guncellemeZamani": "2026-07-26T12:12:00+00:00",
   "kaynak": "google-flights (Turkish Airlines filtreli)",
   "sorgulananBolge": "Amerika",
   "bolgeGuncellemeZamanlari": {
     "Asya": "2026-07-26T12:07:48+00:00",
-    "Amerika": "2026-07-26T12:10:25+00:00"
+    "Amerika": "2026-07-26T12:11:43+00:00"
   },
   "hucreSayisi": 92,
   "basariSayisi": 66,
   "fiyatBulunamadiSayisi": 16,
   "hataSayisi": 10,
-  "yeniHucreSayisi": 44,
+  "yeniHucreSayisi": 4,
   "yeniHataSayisi": 0,
   "sonuclar": [
     {
@@ -95,13 +95,14 @@
       "bolge": "Amerika",
       "seyahatTipi": "R",
       "gidisTarihi": "2026-09-01",
-      "sorguZamani": "2026-07-26T12:10:04+00:00",
+      "sorguZamani": "2026-07-26T12:11:43+00:00",
       "donusTarihi": "2026-09-08",
       "tutar": 37332.0,
       "paraBirimi": "TRY",
       "adayFiyatSayisi": 1,
       "durum": "ok",
-      "aktarma": 0
+      "aktarma": 0,
+      "oncekiTutar": 37332.0
     },
     {
       "rota": "İstanbul (IST) → Dallas/Fort Worth (DFW)",
@@ -113,13 +114,14 @@
       "bolge": "Amerika",
       "seyahatTipi": "R",
       "gidisTarihi": "2026-09-03",
-      "sorguZamani": "2026-07-26T12:10:04+00:00",
+      "sorguZamani": "2026-07-26T12:11:43+00:00",
       "donusTarihi": "2026-09-10",
       "tutar": 37332.0,
       "paraBirimi": "TRY",
       "adayFiyatSayisi": 1,
       "durum": "ok",
-      "aktarma": 0
+      "aktarma": 0,
+      "oncekiTutar": 37332.0
     },
     {
       "rota": "İstanbul (IST) → Dallas/Fort Worth (DFW)",
@@ -131,13 +133,14 @@
       "bolge": "Amerika",
       "seyahatTipi": "R",
       "gidisTarihi": "2026-09-05",
-      "sorguZamani": "2026-07-26T12:10:04+00:00",
+      "sorguZamani": "2026-07-26T12:11:43+00:00",
       "donusTarihi": "2026-09-12",
       "tutar": 41111.0,
       "paraBirimi": "TRY",
       "adayFiyatSayisi": 1,
       "durum": "ok",
-      "aktarma": 0
+      "aktarma": 0,
+      "oncekiTutar": 41111.0
     },
     {
       "rota": "İstanbul (IST) → Dallas/Fort Worth (DFW)",
@@ -149,13 +152,14 @@
       "bolge": "Amerika",
       "seyahatTipi": "R",
       "gidisTarihi": "2026-09-07",
-      "sorguZamani": "2026-07-26T12:10:04+00:00",
+      "sorguZamani": "2026-07-26T12:11:43+00:00",
       "donusTarihi": "2026-09-14",
       "tutar": 37332.0,
       "paraBirimi": "TRY",
       "adayFiyatSayisi": 2,
       "durum": "ok",
-      "aktarma": 0
+      "aktarma": 0,
+      "oncekiTutar": 37332.0
     },
     {
       "rota": "İstanbul (IST) → Buenos Aires (EZE)",
