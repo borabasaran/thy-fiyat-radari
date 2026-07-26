@@ -77,6 +77,26 @@
       },
       "konaklamaGun": 7,
       "maxAktarma": 0
+    },
+    {
+      "kalkis": "SAW",
+      "varislar": [
+        "BER",
+        "MUC",
+        "FRA",
+        "VIE",
+        "AMS",
+        "FCO"
+      ],
+      "bolge": "Avrupa",
+      "seyahatTipi": "R",
+      "tarihler": {
+        "baslangic": "2026-09-01",
+        "bitis": "2026-09-08",
+        "adimGun": 2
+      },
+      "konaklamaGun": 7,
+      "maxAktarma": 0
     }
   ]
 }
