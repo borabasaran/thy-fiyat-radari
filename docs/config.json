@@ -23,8 +23,8 @@
       "bolge": "Avrupa",
       "seyahatTipi": "R",
       "tarihler": {
-        "baslangic": "2026-08-17",
-        "bitis": "2026-08-24",
+        "baslangic": "2026-08-24",
+        "bitis": "2026-08-31",
         "adimGun": 2
       },
       "konaklamaGun": 7,
@@ -46,8 +46,8 @@
       "bolge": "Asya",
       "seyahatTipi": "R",
       "tarihler": {
-        "baslangic": "2026-08-17",
-        "bitis": "2026-08-24",
+        "baslangic": "2026-08-24",
+        "bitis": "2026-08-31",
         "adimGun": 2
       },
       "konaklamaGun": 7,
@@ -71,8 +71,8 @@
       "bolge": "Amerika",
       "seyahatTipi": "R",
       "tarihler": {
-        "baslangic": "2026-08-17",
-        "bitis": "2026-08-24",
+        "baslangic": "2026-08-24",
+        "bitis": "2026-08-31",
         "adimGun": 2
       },
       "konaklamaGun": 7,
