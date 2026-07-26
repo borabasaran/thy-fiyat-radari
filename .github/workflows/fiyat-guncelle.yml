@@ -6,20 +6,51 @@ on:
       bolge:
         description: "Hangi bölge? (hepsi / Avrupa / Asya / Amerika)"
         default: "hepsi"
+      rota:
+        description: "İsteğe bağlı tek rota anahtarı (ör. IST-HKG)"
+        default: ""
   schedule:
     - cron: "0 5 * * *"
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: fiyat-guncelle
   cancel-in-progress: true
 
 jobs:
-  sorgula:
+  hazirla:
+    name: Rotaları hazırla
     runs-on: ubuntu-latest
-    timeout-minutes: 35
+    outputs:
+      matrix: ${{ steps.matrix.outputs.matrix }}
+      route_count: ${{ steps.matrix.outputs.route_count }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - id: matrix
+        name: Rota matrisini oluştur
+        env:
+          BOLGE: ${{ inputs.bolge || 'hepsi' }}
+          ROTA: ${{ inputs.rota || '' }}
+        run: python scripts/fetch_prices.py --matrix
+
+  sorgula:
+    name: Rota · ${{ matrix.key }}
+    needs: hazirla
+    if: ${{ needs.hazirla.outputs.route_count != '0' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    continue-on-error: true
+    strategy:
+      fail-fast: false
+      max-parallel: 3
+      matrix: ${{ fromJSON(needs.hazirla.outputs.matrix) }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -32,13 +63,45 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install "fast-flights==3.0.2" "typing_extensions>=4.12"
-      - name: Fiyatları çek
+      - name: Rotayı sorgula
         env:
-          BOLGE: ${{ inputs.bolge }}
           FF_PROXY: ${{ secrets.FF_PROXY }}
-        run: python scripts/fetch_prices.py
-      - name: Sonuçları ve geçmişi commit'le
+        run: >-
+          python scripts/fetch_prices.py
+          --route "${{ matrix.key }}"
+          --output "partials/${{ matrix.key }}.json"
+      - name: Rota sonucunu yükle
         if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rota-${{ matrix.key }}
+          path: partials/*.json
+          if-no-files-found: warn
+          retention-days: 1
+
+  birlestir:
+    name: Sonuçları birleştir
+    needs: [hazirla, sorgula]
+    if: ${{ always() && needs.hazirla.result == 'success' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Rota sonuçlarını indir
+        uses: actions/download-artifact@v4
+        with:
+          pattern: rota-*
+          path: partials
+          merge-multiple: true
+      - name: Sonuçları birleştir
+        run: python scripts/fetch_prices.py --merge partials
+      - name: Sonuçları ve geçmişi commit'le
         run: |
           git config user.name "fiyat-radari-bot"
           git config user.email "actions@users.noreply.github.com"
@@ -49,8 +112,9 @@ jobs:
           git push
 
   yayinla:
-    needs: sorgula
-    if: always()
+    name: GitHub Pages'i yayınla
+    needs: birlestir
+    if: ${{ always() && needs.birlestir.result == 'success' }}
     permissions:
       contents: read
       pages: write
