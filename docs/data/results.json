@@ -1,9 +1,9 @@
 {
-  "guncellemeZamani": "2026-07-26T12:36:17+00:00",
+  "guncellemeZamani": "2026-07-27T08:16:54+00:00",
   "kaynak": "google-flights (Turkish Airlines filtreli)",
-  "sorgulananBolge": "Avrupa",
+  "sorgulananBolge": "Asya",
   "bolgeGuncellemeZamanlari": {
-    "Asya": "2026-07-26T12:31:09+00:00",
+    "Asya": "2026-07-27T08:16:35+00:00",
     "Amerika": "2026-07-26T12:11:43+00:00",
     "Avrupa": "2026-07-26T12:35:46+00:00"
   },
@@ -11,7 +11,7 @@
   "basariSayisi": 85,
   "fiyatBulunamadiSayisi": 43,
   "hataSayisi": 0,
-  "yeniHucreSayisi": 48,
+  "yeniHucreSayisi": 36,
   "yeniHataSayisi": 0,
   "sonuclar": [
     {
@@ -786,13 +786,14 @@
       "bolge": "Asya",
       "seyahatTipi": "R",
       "gidisTarihi": "2026-09-01",
-      "sorguZamani": "2026-07-26T12:07:22+00:00",
+      "sorguZamani": "2026-07-27T08:15:59+00:00",
       "donusTarihi": "2026-09-08",
       "tutar": 35923.0,
       "paraBirimi": "TRY",
       "adayFiyatSayisi": 2,
       "durum": "ok",
-      "aktarma": 0
+      "aktarma": 0,
+      "oncekiTutar": 35923.0
     },
     {
       "rota": "İstanbul (IST) → Guangzhou (CAN)",
@@ -804,13 +805,14 @@
       "bolge": "Asya",
       "seyahatTipi": "R",
       "gidisTarihi": "2026-09-03",
-      "sorguZamani": "2026-07-26T12:07:22+00:00",
+      "sorguZamani": "2026-07-27T08:15:59+00:00",
       "donusTarihi": "2026-09-10",
       "tutar": 33089.0,
       "paraBirimi": "TRY",
       "adayFiyatSayisi": 2,
       "durum": "ok",
-      "aktarma": 0
+      "aktarma": 0,
+      "oncekiTutar": 33089.0
     },
     {
       "rota": "İstanbul (IST) → Guangzhou (CAN)",
@@ -822,13 +824,14 @@
       "bolge": "Asya",
       "seyahatTipi": "R",
       "gidisTarihi": "2026-09-05",
-      "sorguZamani": "2026-07-26T12:07:22+00:00",
+      "sorguZamani": "2026-07-27T08:15:59+00:00",
       "donusTarihi": "2026-09-12",
       "tutar": 38993.0,
       "paraBirimi": "TRY",
       "adayFiyatSayisi": 2,
       "durum": "ok",
-      "aktarma": 0
+      "aktarma": 0,
+      "oncekiTutar": 38993.0
     },
     {
       "rota": "İstanbul (IST) → Guangzhou (CAN)",
@@ -840,13 +843,14 @@
       "bolge": "Asya",
       "seyahatTipi": "R",
       "gidisTarihi": "2026-09-07",
-      "sorguZamani": "2026-07-26T12:07:22+00:00",
+      "sorguZamani": "2026-07-27T08:15:59+00:00",
       "donusTarihi": "2026-09-14",
       "tutar": 33089.0,
       "paraBirimi": "TRY",
       "adayFiyatSayisi": 2,
       "durum": "ok",
-      "aktarma": 0
+      "aktarma": 0,
+      "oncekiTutar": 33089.0
     },
     {
       "rota": "İstanbul (IST) → Hong Kong (HKG)",
@@ -858,7 +862,7 @@
       "bolge": "Asya",
       "seyahatTipi": "R",
       "gidisTarihi": "2026-09-01",
-      "sorguZamani": "2026-07-26T12:31:09+00:00",
+      "sorguZamani": "2026-07-27T08:15:44+00:00",
       "donusTarihi": "2026-09-08",
       "tutar": 56232.0,
       "paraBirimi": "TRY",
@@ -877,7 +881,7 @@
       "bolge": "Asya",
       "seyahatTipi": "R",
       "gidisTarihi": "2026-09-03",
-      "sorguZamani": "2026-07-26T12:31:09+00:00",
+      "sorguZamani": "2026-07-27T08:15:44+00:00",
       "donusTarihi": "2026-09-10",
       "tutar": 56232.0,
       "paraBirimi": "TRY",
@@ -896,7 +900,7 @@
       "bolge": "Asya",
       "seyahatTipi": "R",
       "gidisTarihi": "2026-09-05",
-      "sorguZamani": "2026-07-26T12:31:09+00:00",
+      "sorguZamani": "2026-07-27T08:15:44+00:00",
       "donusTarihi": "2026-09-12",
       "tutar": 57648.0,
       "paraBirimi": "TRY",
@@ -915,7 +919,7 @@
       "bolge": "Asya",
       "seyahatTipi": "R",
       "gidisTarihi": "2026-09-07",
-      "sorguZamani": "2026-07-26T12:31:09+00:00",
+      "sorguZamani": "2026-07-27T08:15:44+00:00",
       "donusTarihi": "2026-09-14",
       "tutar": 56232.0,
       "paraBirimi": "TRY",
@@ -934,13 +938,14 @@
       "bolge": "Asya",
       "seyahatTipi": "R",
       "gidisTarihi": "2026-09-01",
-      "sorguZamani": "2026-07-26T12:07:28+00:00",
+      "sorguZamani": "2026-07-27T08:16:12+00:00",
       "donusTarihi": "2026-09-08",
       "tutar": 92938.0,
       "paraBirimi": "TRY",
       "adayFiyatSayisi": 1,
       "durum": "ok",
-      "aktarma": 0
+      "aktarma": 0,
+      "oncekiTutar": 92938.0
     },
     {
       "rota": "İstanbul (IST) → Tokyo (Haneda) (HND)",
@@ -952,13 +957,14 @@
       "bolge": "Asya",
       "seyahatTipi": "R",
       "gidisTarihi": "2026-09-03",
-      "sorguZamani": "2026-07-26T12:07:28+00:00",
+      "sorguZamani": "2026-07-27T08:16:12+00:00",
       "donusTarihi": "2026-09-10",
-      "tutar": 81602.0,
+      "tutar": 65780.0,
       "paraBirimi": "TRY",
       "adayFiyatSayisi": 1,
       "durum": "ok",
-      "aktarma": 0
+      "aktarma": 0,
+      "oncekiTutar": 81602.0
     },
     {
       "rota": "İstanbul (IST) → Tokyo (Haneda) (HND)",
@@ -970,13 +976,14 @@
       "bolge": "Asya",
       "seyahatTipi": "R",
       "gidisTarihi": "2026-09-05",
-      "sorguZamani": "2026-07-26T12:07:28+00:00",
+      "sorguZamani": "2026-07-27T08:16:12+00:00",
       "donusTarihi": "2026-09-12",
       "tutar": 105218.0,
       "paraBirimi": "TRY",
       "adayFiyatSayisi": 2,
       "durum": "ok",
-      "aktarma": 0
+      "aktarma": 0,
+      "oncekiTutar": 105218.0
     },
     {
       "rota": "İstanbul (IST) → Tokyo (Haneda) (HND)",
@@ -988,13 +995,14 @@
       "bolge": "Asya",
       "seyahatTipi": "R",
       "gidisTarihi": "2026-09-07",
-      "sorguZamani": "2026-07-26T12:07:28+00:00",
+      "sorguZamani": "2026-07-27T08:16:12+00:00",
       "donusTarihi": "2026-09-14",
       "tutar": 92938.0,
       "paraBirimi": "TRY",
       "adayFiyatSayisi": 2,
       "durum": "ok",
-      "aktarma": 0
+      "aktarma": 0,
+      "oncekiTutar": 92938.0
     },
     {
       "rota": "İstanbul (IST) → Seul (ICN)",
@@ -1006,13 +1014,14 @@
       "bolge": "Asya",
       "seyahatTipi": "R",
       "gidisTarihi": "2026-09-01",
-      "sorguZamani": "2026-07-26T12:07:46+00:00",
+      "sorguZamani": "2026-07-27T08:16:22+00:00",
       "donusTarihi": "2026-09-08",
       "tutar": 53636.0,
       "paraBirimi": "TRY",
       "adayFiyatSayisi": 3,
       "durum": "ok",
-      "aktarma": 0
+      "aktarma": 0,
+      "oncekiTutar": 53636.0
     },
     {
       "rota": "İstanbul (IST) → Seul (ICN)",
@@ -1024,13 +1033,14 @@
       "bolge": "Asya",
       "seyahatTipi": "R",
       "gidisTarihi": "2026-09-03",
-      "sorguZamani": "2026-07-26T12:07:46+00:00",
+      "sorguZamani": "2026-07-27T08:16:22+00:00",
       "donusTarihi": "2026-09-10",
       "tutar": 55573.0,
       "paraBirimi": "TRY",
       "adayFiyatSayisi": 3,
       "durum": "ok",
-      "aktarma": 0
+      "aktarma": 0,
+      "oncekiTutar": 55573.0
     },
     {
       "rota": "İstanbul (IST) → Seul (ICN)",
@@ -1042,13 +1052,14 @@
       "bolge": "Asya",
       "seyahatTipi": "R",
       "gidisTarihi": "2026-09-05",
-      "sorguZamani": "2026-07-26T12:07:46+00:00",
+      "sorguZamani": "2026-07-27T08:16:22+00:00",
       "donusTarihi": "2026-09-12",
       "tutar": 53636.0,
       "paraBirimi": "TRY",
       "adayFiyatSayisi": 2,
       "durum": "ok",
-      "aktarma": 0
+      "aktarma": 0,
+      "oncekiTutar": 53636.0
     },
     {
       "rota": "İstanbul (IST) → Seul (ICN)",
@@ -1060,13 +1071,14 @@
       "bolge": "Asya",
       "seyahatTipi": "R",
       "gidisTarihi": "2026-09-07",
-      "sorguZamani": "2026-07-26T12:07:46+00:00",
+      "sorguZamani": "2026-07-27T08:16:22+00:00",
       "donusTarihi": "2026-09-14",
       "tutar": 52455.0,
       "paraBirimi": "TRY",
       "adayFiyatSayisi": 1,
       "durum": "ok",
-      "aktarma": 0
+      "aktarma": 0,
+      "oncekiTutar": 52455.0
     },
     {
       "rota": "İstanbul (IST) → Osaka (KIX)",
@@ -1078,13 +1090,14 @@
       "bolge": "Asya",
       "seyahatTipi": "R",
       "gidisTarihi": "2026-09-01",
-      "sorguZamani": "2026-07-26T12:07:45+00:00",
+      "sorguZamani": "2026-07-27T08:16:20+00:00",
       "donusTarihi": "2026-09-08",
       "tutar": 76840.0,
       "paraBirimi": "TRY",
       "adayFiyatSayisi": 1,
       "durum": "ok",
-      "aktarma": 0
+      "aktarma": 0,
+      "oncekiTutar": 76840.0
     },
     {
       "rota": "İstanbul (IST) → Osaka (KIX)",
@@ -1096,13 +1109,14 @@
       "bolge": "Asya",
       "seyahatTipi": "R",
       "gidisTarihi": "2026-09-03",
-      "sorguZamani": "2026-07-26T12:07:45+00:00",
+      "sorguZamani": "2026-07-27T08:16:20+00:00",
       "donusTarihi": "2026-09-10",
       "tutar": 71644.0,
       "paraBirimi": "TRY",
       "adayFiyatSayisi": 1,
       "durum": "ok",
-      "aktarma": 0
+      "aktarma": 0,
+      "oncekiTutar": 71644.0
     },
     {
       "rota": "İstanbul (IST) → Osaka (KIX)",
@@ -1114,13 +1128,14 @@
       "bolge": "Asya",
       "seyahatTipi": "R",
       "gidisTarihi": "2026-09-05",
-      "sorguZamani": "2026-07-26T12:07:45+00:00",
+      "sorguZamani": "2026-07-27T08:16:20+00:00",
       "donusTarihi": "2026-09-12",
       "tutar": 89356.0,
       "paraBirimi": "TRY",
       "adayFiyatSayisi": 1,
       "durum": "ok",
-      "aktarma": 0
+      "aktarma": 0,
+      "oncekiTutar": 89356.0
     },
     {
       "rota": "İstanbul (IST) → Osaka (KIX)",
@@ -1132,13 +1147,14 @@
       "bolge": "Asya",
       "seyahatTipi": "R",
       "gidisTarihi": "2026-09-07",
-      "sorguZamani": "2026-07-26T12:07:45+00:00",
+      "sorguZamani": "2026-07-27T08:16:20+00:00",
       "donusTarihi": "2026-09-14",
       "tutar": 97622.0,
       "paraBirimi": "TRY",
       "adayFiyatSayisi": 1,
       "durum": "ok",
-      "aktarma": 0
+      "aktarma": 0,
+      "oncekiTutar": 97622.0
     },
     {
       "rota": "İstanbul (IST) → Tokyo (Narita) (NRT)",
@@ -1150,13 +1166,14 @@
       "bolge": "Asya",
       "seyahatTipi": "R",
       "gidisTarihi": "2026-09-01",
-      "sorguZamani": "2026-07-26T12:07:25+00:00",
+      "sorguZamani": "2026-07-27T08:16:00+00:00",
       "donusTarihi": "2026-09-08",
       "tutar": 62770.0,
       "paraBirimi": "TRY",
       "adayFiyatSayisi": 2,
       "durum": "ok",
-      "aktarma": 0
+      "aktarma": 0,
+      "oncekiTutar": 62770.0
     },
     {
       "rota": "İstanbul (IST) → Tokyo (Narita) (NRT)",
@@ -1168,13 +1185,14 @@
       "bolge": "Asya",
       "seyahatTipi": "R",
       "gidisTarihi": "2026-09-03",
-      "sorguZamani": "2026-07-26T12:07:25+00:00",
+      "sorguZamani": "2026-07-27T08:16:00+00:00",
       "donusTarihi": "2026-09-10",
       "tutar": 59700.0,
       "paraBirimi": "TRY",
       "adayFiyatSayisi": 2,
       "durum": "ok",
-      "aktarma": 0
+      "aktarma": 0,
+      "oncekiTutar": 59700.0
     },
     {
       "rota": "İstanbul (IST) → Tokyo (Narita) (NRT)",
@@ -1186,13 +1204,14 @@
       "bolge": "Asya",
       "seyahatTipi": "R",
       "gidisTarihi": "2026-09-05",
-      "sorguZamani": "2026-07-26T12:07:25+00:00",
+      "sorguZamani": "2026-07-27T08:16:00+00:00",
       "donusTarihi": "2026-09-12",
-      "tutar": 93943.0,
+      "tutar": 89220.0,
       "paraBirimi": "TRY",
       "adayFiyatSayisi": 2,
       "durum": "ok",
-      "aktarma": 0
+      "aktarma": 0,
+      "oncekiTutar": 93943.0
     },
     {
       "rota": "İstanbul (IST) → Tokyo (Narita) (NRT)",
@@ -1204,13 +1223,14 @@
       "bolge": "Asya",
       "seyahatTipi": "R",
       "gidisTarihi": "2026-09-07",
-      "sorguZamani": "2026-07-26T12:07:25+00:00",
+      "sorguZamani": "2026-07-27T08:16:00+00:00",
       "donusTarihi": "2026-09-14",
       "tutar": 65841.0,
       "paraBirimi": "TRY",
       "adayFiyatSayisi": 2,
       "durum": "ok",
-      "aktarma": 0
+      "aktarma": 0,
+      "oncekiTutar": 65841.0
     },
     {
       "rota": "İstanbul (IST) → Pekin (PEK)",
@@ -1222,13 +1242,14 @@
       "bolge": "Asya",
       "seyahatTipi": "R",
       "gidisTarihi": "2026-09-01",
-      "sorguZamani": "2026-07-26T12:07:06+00:00",
+      "sorguZamani": "2026-07-27T08:15:41+00:00",
       "donusTarihi": "2026-09-08",
       "tutar": 40363.0,
       "paraBirimi": "TRY",
       "adayFiyatSayisi": 3,
       "durum": "ok",
-      "aktarma": 0
+      "aktarma": 0,
+      "oncekiTutar": 40363.0
     },
     {
       "rota": "İstanbul (IST) → Pekin (PEK)",
@@ -1240,13 +1261,14 @@
       "bolge": "Asya",
       "seyahatTipi": "R",
       "gidisTarihi": "2026-09-03",
-      "sorguZamani": "2026-07-26T12:07:06+00:00",
+      "sorguZamani": "2026-07-27T08:15:41+00:00",
       "donusTarihi": "2026-09-10",
       "tutar": 40363.0,
       "paraBirimi": "TRY",
       "adayFiyatSayisi": 3,
       "durum": "ok",
-      "aktarma": 0
+      "aktarma": 0,
+      "oncekiTutar": 40363.0
     },
     {
       "rota": "İstanbul (IST) → Pekin (PEK)",
@@ -1258,13 +1280,14 @@
       "bolge": "Asya",
       "seyahatTipi": "R",
       "gidisTarihi": "2026-09-05",
-      "sorguZamani": "2026-07-26T12:07:06+00:00",
+      "sorguZamani": "2026-07-27T08:15:41+00:00",
       "donusTarihi": "2026-09-12",
       "tutar": 40363.0,
       "paraBirimi": "TRY",
       "adayFiyatSayisi": 2,
       "durum": "ok",
-      "aktarma": 0
+      "aktarma": 0,
+      "oncekiTutar": 40363.0
     },
     {
       "rota": "İstanbul (IST) → Pekin (PEK)",
@@ -1276,13 +1299,14 @@
       "bolge": "Asya",
       "seyahatTipi": "R",
       "gidisTarihi": "2026-09-07",
-      "sorguZamani": "2026-07-26T12:07:06+00:00",
+      "sorguZamani": "2026-07-27T08:15:41+00:00",
       "donusTarihi": "2026-09-14",
       "tutar": 40363.0,
       "paraBirimi": "TRY",
       "adayFiyatSayisi": 2,
       "durum": "ok",
-      "aktarma": 0
+      "aktarma": 0,
+      "oncekiTutar": 40363.0
     },
     {
       "rota": "İstanbul (IST) → Şanghay (PVG)",
@@ -1294,13 +1318,14 @@
       "bolge": "Asya",
       "seyahatTipi": "R",
       "gidisTarihi": "2026-09-01",
-      "sorguZamani": "2026-07-26T12:07:03+00:00",
+      "sorguZamani": "2026-07-27T08:15:42+00:00",
       "donusTarihi": "2026-09-08",
-      "tutar": 58074.0,
+      "tutar": 55713.0,
       "paraBirimi": "TRY",
       "adayFiyatSayisi": 2,
       "durum": "ok",
-      "aktarma": 0
+      "aktarma": 0,
+      "oncekiTutar": 58074.0
     },
     {
       "rota": "İstanbul (IST) → Şanghay (PVG)",
@@ -1312,13 +1337,14 @@
       "bolge": "Asya",
       "seyahatTipi": "R",
       "gidisTarihi": "2026-09-03",
-      "sorguZamani": "2026-07-26T12:07:03+00:00",
+      "sorguZamani": "2026-07-27T08:15:42+00:00",
       "donusTarihi": "2026-09-10",
       "tutar": 45322.0,
       "paraBirimi": "TRY",
       "adayFiyatSayisi": 2,
       "durum": "ok",
-      "aktarma": 0
+      "aktarma": 0,
+      "oncekiTutar": 45322.0
     },
     {
       "rota": "İstanbul (IST) → Şanghay (PVG)",
@@ -1330,13 +1356,14 @@
       "bolge": "Asya",
       "seyahatTipi": "R",
       "gidisTarihi": "2026-09-05",
-      "sorguZamani": "2026-07-26T12:07:03+00:00",
+      "sorguZamani": "2026-07-27T08:15:42+00:00",
       "donusTarihi": "2026-09-12",
       "tutar": 48156.0,
       "paraBirimi": "TRY",
       "adayFiyatSayisi": 2,
       "durum": "ok",
-      "aktarma": 0
+      "aktarma": 0,
+      "oncekiTutar": 48156.0
     },
     {
       "rota": "İstanbul (IST) → Şanghay (PVG)",
@@ -1348,13 +1375,14 @@
       "bolge": "Asya",
       "seyahatTipi": "R",
       "gidisTarihi": "2026-09-07",
-      "sorguZamani": "2026-07-26T12:07:03+00:00",
+      "sorguZamani": "2026-07-27T08:15:42+00:00",
       "donusTarihi": "2026-09-14",
       "tutar": 42488.0,
       "paraBirimi": "TRY",
       "adayFiyatSayisi": 2,
       "durum": "ok",
-      "aktarma": 0
+      "aktarma": 0,
+      "oncekiTutar": 42488.0
     },
     {
       "rota": "İstanbul (IST) → Ho Chi Minh City (SGN)",
@@ -1366,13 +1394,14 @@
       "bolge": "Asya",
       "seyahatTipi": "R",
       "gidisTarihi": "2026-09-01",
-      "sorguZamani": "2026-07-26T12:07:48+00:00",
+      "sorguZamani": "2026-07-27T08:16:35+00:00",
       "donusTarihi": "2026-09-08",
       "tutar": 59430.0,
       "paraBirimi": "TRY",
       "adayFiyatSayisi": 1,
       "durum": "ok",
-      "aktarma": 0
+      "aktarma": 0,
+      "oncekiTutar": 59430.0
     },
     {
       "rota": "İstanbul (IST) → Ho Chi Minh City (SGN)",
@@ -1384,13 +1413,14 @@
       "bolge": "Asya",
       "seyahatTipi": "R",
       "gidisTarihi": "2026-09-03",
-      "sorguZamani": "2026-07-26T12:07:48+00:00",
+      "sorguZamani": "2026-07-27T08:16:35+00:00",
       "donusTarihi": "2026-09-10",
       "tutar": 57068.0,
       "paraBirimi": "TRY",
       "adayFiyatSayisi": 1,
       "durum": "ok",
-      "aktarma": 0
+      "aktarma": 0,
+      "oncekiTutar": 57068.0
     },
     {
       "rota": "İstanbul (IST) → Ho Chi Minh City (SGN)",
@@ -1402,13 +1432,14 @@
       "bolge": "Asya",
       "seyahatTipi": "R",
       "gidisTarihi": "2026-09-05",
-      "sorguZamani": "2026-07-26T12:07:48+00:00",
+      "sorguZamani": "2026-07-27T08:16:35+00:00",
       "donusTarihi": "2026-09-12",
-      "tutar": 66515.0,
+      "tutar": 69821.0,
       "paraBirimi": "TRY",
       "adayFiyatSayisi": 1,
       "durum": "ok",
-      "aktarma": 0
+      "aktarma": 0,
+      "oncekiTutar": 66515.0
     },
     {
       "rota": "İstanbul (IST) → Ho Chi Minh City (SGN)",
@@ -1420,13 +1451,14 @@
       "bolge": "Asya",
       "seyahatTipi": "R",
       "gidisTarihi": "2026-09-07",
-      "sorguZamani": "2026-07-26T12:07:48+00:00",
+      "sorguZamani": "2026-07-27T08:16:35+00:00",
       "donusTarihi": "2026-09-14",
       "tutar": 55179.0,
       "paraBirimi": "TRY",
       "adayFiyatSayisi": 1,
       "durum": "ok",
-      "aktarma": 0
+      "aktarma": 0,
+      "oncekiTutar": 55179.0
     },
     {
       "rota": "İstanbul (IST) → Amsterdam (AMS)",
