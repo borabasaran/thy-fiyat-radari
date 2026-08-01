@@ -196,7 +196,7 @@
 
 <div class="kontrol">
   <button class="btn" id="btnCalistir">Sorguyu çalıştır</button>
-  <button class="btn ikincil" id="btnYenile">Sonuçları yenile</button>
+  <button class="btn ikincil" id="btnYenile" title="Yeni sorgu başlatmadan yayımlanmış sonuç dosyasını yeniden okur">Ekrandaki veriyi yenile</button>
   <button class="btn ikincil" id="btnEditor">Rotaları düzenle</button>
   <button class="btn ikincil" id="btnToken">Token</button>
   <a class="btn ikincil" href="gecmis.html">Fiyat geçmişi</a>
@@ -319,7 +319,8 @@ function ciz(veri){
         const oran=max>min?(h.tutar-min)/(max-min):0,ton=150-Math.round(oran*150),encucuz=h.tutar===min?" encucuz":"";
         html+=`<article class="hucre${encucuz}" style="--isi:hsl(${ton} 70% 52%)"><a href="${thyLinki(h)}" target="_blank" rel="noopener"><div class="tarih">${trTarih(h.gidisTarihi)}${h.donusTarihi?" → "+trTarih(h.donusTarihi):""}</div><div class="fiyat">${trPara(h.tutar)}<span class="pb">${esc(h.paraBirimi)}</span></div>${fiyatDegisimHtml(h)}<div class="altbilgi">${h.aktarma===0?"aktarmasız":h.aktarma>0?`${h.aktarma} aktarma`:"uçuş ayrıntısı"}</div>${eskilikHtml(h)}</a></article>`;
       }else{
-        const not=h.durum==="hata"?"teknik sorgu hatası":"uygun TK fiyatı bulunamadı";
+        const hataNotlari={"veri-ayristirma":"yanıt ayrıştırma hatası","zaman-asimi":"rota zaman aşımı","baglanti":"bağlantı hatası","beklenmeyen":"teknik sorgu hatası"};
+        const not=h.durum==="hata"?(hataNotlari[h.hataTuru]||"teknik sorgu hatası"):"uygun TK fiyatı bulunamadı";
         const eski=h.sonBasariliTutar!=null?`<div class="altbilgi">Son başarılı fiyat: ${trPara(h.sonBasariliTutar)} ${esc(h.sonBasariliParaBirimi||"")}${h.sonBasariliSorguZamani?` · ${new Date(h.sonBasariliSorguZamani).toLocaleDateString("tr-TR")}`:""}</div>`:"";
         const detay=h.detay?`<details class="hata-detay"><summary>Ayrıntı</summary>${esc(h.detay)}</details>`:"";
         html+=`<article class="hucre sorunlu"><div class="tarih">${trTarih(h.gidisTarihi)}${h.donusTarihi?" → "+trTarih(h.donusTarihi):""}</div><div class="fiyat">${not}</div>${eski}${detay}</article>`;
@@ -330,7 +331,7 @@ function ciz(veri){
   $("#icerik").innerHTML=html;
 }
 
-async function yukle(sessiz=false){try{const y=await fetch(VERI+"?t="+Date.now(),{cache:"no-store"});if(!y.ok)throw new Error("HTTP "+y.status);ciz(await y.json());if(!sessiz)bildir("")}catch(e){if(!sessiz)$("#icerik").innerHTML=`<div class="bos">Sonuç dosyası okunamadı (${esc(e.message)}).</div>`}}
+async function yukle(sessiz=false){try{const y=await fetch(VERI+"?t="+Date.now(),{cache:"no-store"});if(!y.ok)throw new Error("HTTP "+y.status);ciz(await y.json());if(!sessiz)bildir("");return true}catch(e){if(!sessiz)$("#icerik").innerHTML=`<div class="bos">Sonuç dosyası okunamadı (${esc(e.message)}).</div>`;return false}}
 
 function islemGoster(metin="Fiyatlar sorgulanıyor…"){
   $("#islemPaneli").classList.add("acik");$("#islemBaslik").textContent=metin;islemBaslangic=Date.now();clearInterval(islemSaat);
@@ -430,7 +431,7 @@ $("#btnKaydet").addEventListener("click",async()=>{const hata=dogrula();if(hata)
 $("#btnCalistir").addEventListener("click",()=>{const token=localStorage.getItem("ghToken");if(token)tetikle(token);else{$("#patKutu").classList.add("acik");$("#pat").focus();bildir("Sorgu için token girin.","bekle")}});
 $("#btnPatKaydet").addEventListener("click",()=>{const t=$("#pat").value.trim();if(!t){bildir("Token boş olamaz.","kotu");return}localStorage.setItem("ghToken",t);$("#patKutu").classList.remove("acik");tetikle(t)});
 $("#btnToken").addEventListener("click",()=>{localStorage.removeItem("ghToken");$("#pat").value="";$("#patKutu").classList.add("acik");$("#pat").focus();bildir("Yeni token girin.","bekle")});
-$("#btnYenile").addEventListener("click",()=>yukle());
+$("#btnYenile").addEventListener("click",async()=>{const ok=await yukle(true);bildir(ok?"Ekrandaki sonuçlar yenilendi.":"Yayımlanmış sonuçlar şu anda okunamadı.",ok?"iyi":"kotu")});
 $("#icerik").addEventListener("click",e=>{const rota=e.target.closest("[data-retry]")?.dataset.retry;if(!rota)return;if(!gecerliRotalar.has(rota)){bildir(`${rota} artık rota ayarlarında bulunmuyor.`,"kotu");return}const token=localStorage.getItem("ghToken");if(token)tetikle(token,rota);else{$("#patKutu").classList.add("acik");bildir(`${rota} rotasını yeniden sorgulamak için token girin.`,"bekle")}});
 $("#btnIptal").addEventListener("click",async()=>{if(!aktifRunId||!aktifToken)return;const depo=depoBilgisi();$("#btnIptal").disabled=true;try{const y=await fetch(`https://api.github.com/repos/${depo.owner}/${depo.repo}/actions/runs/${aktifRunId}/cancel`,{method:"POST",headers:apiBaslik(aktifToken)});if(y.status!==202)throw new Error("GitHub API "+y.status);bildir("Durdurma isteği gönderildi.","bekle")}catch(e){bildir("Durdurulamadı: "+e.message,"kotu")}finally{$("#btnIptal").disabled=false}});
 
@@ -439,6 +440,10 @@ async function kaldigiYerdenIzle(){
   try{const r=JSON.parse(kayit);aktifSekme=BOLGELER.includes(r.bolge)?r.bolge:aktifSekme;islemGoster(`${aktifSekme} sorgusu sürüyor…`);islemBaslangic=new Date(r.baslangic).getTime()||Date.now();await runIzle(token,r.id,r.eskiZaman||"")}catch(e){localStorage.removeItem("aktifFiyatRun")}
 }
 
+// Bu yenileme yalnızca yayımlanmış JSON dosyasını okur; Actions sorgusu başlatmaz.
+// Böylece açık bırakılan pano, başka bir manuel tarama yayımlandığında güncel sonucu gösterir.
+const otomatikVeriYenile=setInterval(()=>{if(document.visibilityState==="visible"&&!aktifRunId)yukle(true)},300000);
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"&&!aktifRunId)yukle(true)});
 $("#btnCalistir").textContent=`${aktifSekme} sorgusunu çalıştır`;sekmeCiz();Promise.all([yukle(),gecerliRotalariYukle()]).then(kaldigiYerdenIzle);
 </script>
 </body>
