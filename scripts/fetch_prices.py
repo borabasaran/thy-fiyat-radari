@@ -7,6 +7,7 @@ import argparse
 import datetime as dt
 import json
 import os
+import signal
 import sys
 import time
 from pathlib import Path
@@ -208,7 +209,7 @@ def tekrar_edilebilir_hata(hata: Exception) -> bool:
 
 def hata_turu(hata: Exception) -> str:
     metin = f"{type(hata).__name__} {hata}".lower()
-    if "timeout" in metin:
+    if isinstance(hata, TimeoutError) or "timeout" in metin:
         return "zaman-asimi"
     if any(x in metin for x in ("connection", "network", "proxy", "429", "503")):
         return "baglanti"
@@ -217,8 +218,39 @@ def hata_turu(hata: Exception) -> str:
     return "beklenmeyen"
 
 
+class RotaZamanAsimi(TimeoutError):
+    """Bir rotaya ayrılan toplam süre doldu."""
+
+
+def _zaman_asimi_sinyali(_isaret: int, _cerceve: Any) -> None:
+    raise RotaZamanAsimi("rota için ayrılan süre doldu")
+
+
+def hucre_taslagi(rota: dict[str, Any], gidis: dt.date, simdi: str) -> dict[str, Any]:
+    hucre: dict[str, Any] = {
+        "rota": rota["ad"],
+        "rotaAnahtari": rota["anahtar"],
+        "kalkis": rota["kalkis"],
+        "kalkisSehir": sehir(rota["kalkis"]),
+        "varis": rota["varis"],
+        "varisSehir": sehir(rota["varis"]),
+        "bolge": rota["bolge"],
+        "seyahatTipi": str(rota.get("seyahatTipi", "O")).upper(),
+        "gidisTarihi": gidis.isoformat(),
+        "sorguZamani": simdi,
+    }
+    if hucre["seyahatTipi"] == "R":
+        hucre["donusTarihi"] = (
+            gidis + dt.timedelta(days=int(rota.get("konaklamaGun", 7)))
+        ).isoformat()
+    return hucre
+
+
 def rota_sorgula(
-    rota: dict[str, Any], ayarlar: dict[str, Any], cikis: Path
+    rota: dict[str, Any],
+    ayarlar: dict[str, Any],
+    cikis: Path,
+    max_saniye: int | None = None,
 ) -> int:
     from fast_flights.exceptions import FlightsNotFound
 
@@ -227,28 +259,36 @@ def rota_sorgula(
     deneme_sayisi = max(1, int(ayarlar.get("yenidenDenemeSayisi", 2)))
     sonuclar: list[dict[str, Any]] = []
     tarihler = list(tarih_uret(rota["tarihler"]))
+    max_saniye = max_saniye or int(ayarlar.get("rotaZamanSiniriSn", 210))
+    baslangic = time.monotonic()
+    sinyal_destegi = hasattr(signal, "SIGALRM") and hasattr(signal, "setitimer")
+    onceki_isleyici = None
+    if sinyal_destegi:
+        onceki_isleyici = signal.signal(signal.SIGALRM, _zaman_asimi_sinyali)
 
     for sira, gidis in enumerate(tarihler, start=1):
-        hucre: dict[str, Any] = {
-            "rota": rota["ad"],
-            "rotaAnahtari": rota["anahtar"],
-            "kalkis": rota["kalkis"],
-            "kalkisSehir": sehir(rota["kalkis"]),
-            "varis": rota["varis"],
-            "varisSehir": sehir(rota["varis"]),
-            "bolge": rota["bolge"],
-            "seyahatTipi": str(rota.get("seyahatTipi", "O")).upper(),
-            "gidisTarihi": gidis.isoformat(),
-            "sorguZamani": simdi,
-        }
-        if hucre["seyahatTipi"] == "R":
-            hucre["donusTarihi"] = (
-                gidis + dt.timedelta(days=int(rota.get("konaklamaGun", 7)))
-            ).isoformat()
-
+        hucre = hucre_taslagi(rota, gidis, simdi)
+        kalan = max_saniye - (time.monotonic() - baslangic)
+        if kalan <= 0:
+            hucre.update(
+                {
+                    "durum": "hata",
+                    "hataTuru": "zaman-asimi",
+                    "detay": (
+                        "Rota zaman sınırı dolduğu için bu tarih sorgulanamadı."
+                    ),
+                }
+            )
+            sonuclar.append(hucre)
+            continue
         print(f"[{sira}/{len(tarihler)}] {rota['anahtar']} {gidis.isoformat()}", flush=True)
         for deneme in range(deneme_sayisi):
             try:
+                kalan = max_saniye - (time.monotonic() - baslangic)
+                if kalan <= 0:
+                    raise RotaZamanAsimi("rota için ayrılan süre doldu")
+                if sinyal_destegi:
+                    signal.setitimer(signal.ITIMER_REAL, max(0.1, kalan))
                 tutar, para, aday, aktarma = sorgula(rota, gidis, ayarlar)
                 hucre.update(
                     {
@@ -269,12 +309,12 @@ def rota_sorgula(
             except (IndexError, TypeError, ValueError, KeyError, AttributeError) as hata:
                 hucre.update(
                     {
-                        "durum": "fiyat-bulunamadi",
+                        "durum": "hata",
                         "hataTuru": "veri-ayristirma",
                         "detay": (
-                            "Uygun uçuş bulunamadı veya Google Flights yanıtı "
-                            f"ayrıştırılamadı: {type(hata).__name__}"
-                        )[:240],
+                            "Google Flights yanıtı ayrıştırılamadı: "
+                            f"{type(hata).__name__}: {hata}"
+                        )[:300],
                     }
                 )
                 break
@@ -290,7 +330,10 @@ def rota_sorgula(
                     )
                     break
                 hucre["deneme"] = deneme + 2
-                time.sleep(4 * (deneme + 1))
+                time.sleep(min(4 * (deneme + 1), max(0, kalan)))
+            finally:
+                if sinyal_destegi:
+                    signal.setitimer(signal.ITIMER_REAL, 0)
 
         print(
             f"[{hucre.get('durum', 'hata')}] {rota['anahtar']} {gidis.isoformat()}",
@@ -299,6 +342,9 @@ def rota_sorgula(
         sonuclar.append(hucre)
         if bekleme and sira < len(tarihler):
             time.sleep(bekleme)
+
+    if sinyal_destegi and onceki_isleyici is not None:
+        signal.signal(signal.SIGALRM, onceki_isleyici)
 
     payload = {
         "rotaAnahtari": rota["anahtar"],
@@ -479,6 +525,7 @@ def argumanlar() -> argparse.Namespace:
     parser.add_argument("--output", type=Path)
     parser.add_argument("--merge", type=Path)
     parser.add_argument("--region")
+    parser.add_argument("--max-seconds", type=int)
     return parser.parse_args()
 
 
@@ -500,6 +547,7 @@ def main() -> int:
             rotalar[0],
             config.get("ayarlar", {}),
             args.output or Path("partial.json"),
+            args.max_seconds,
         )
     raise SystemExit("--matrix, --route veya --merge seçeneklerinden biri gerekli.")
 

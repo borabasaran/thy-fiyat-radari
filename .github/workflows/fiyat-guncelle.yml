@@ -4,13 +4,13 @@ on:
   workflow_dispatch:
     inputs:
       bolge:
-        description: "Hangi bölge? (hepsi / Avrupa / Asya / Amerika)"
-        default: "hepsi"
+        description: "Taranacak kapsam"
+        type: choice
+        options: [Avrupa, Asya, Amerika, hepsi]
+        default: Avrupa
       rota:
         description: "İsteğe bağlı tek rota anahtarı (ör. IST-HKG)"
         default: ""
-  schedule:
-    - cron: "0 5 * * *"
 
 permissions:
   contents: read
@@ -45,7 +45,7 @@ jobs:
     needs: hazirla
     if: ${{ needs.hazirla.outputs.route_count != '0' }}
     runs-on: ubuntu-latest
-    timeout-minutes: 12
+    timeout-minutes: 6
     continue-on-error: true
     strategy:
       fail-fast: false
@@ -68,6 +68,7 @@ jobs:
         run: >-
           python scripts/fetch_prices.py
           --route "${{ matrix.key }}"
+          --max-seconds 210
           --output "partials/${{ matrix.key }}.json"
       - name: Rota sonucunu yükle
         if: always()
