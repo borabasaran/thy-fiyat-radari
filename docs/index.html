@@ -446,5 +446,6 @@ const otomatikVeriYenile=setInterval(()=>{if(document.visibilityState==="visible
 document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"&&!aktifRunId)yukle(true)});
 $("#btnCalistir").textContent=`${aktifSekme} sorgusunu çalıştır`;sekmeCiz();Promise.all([yukle(),gecerliRotalariYukle()]).then(kaldigiYerdenIzle);
 </script>
+<script src="imza.js" defer></script>
 </body>
 </html>
